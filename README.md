@@ -19,6 +19,8 @@ Copyright © 2022 Erik Baauw. All rights reserved.
 ### Work in Progress
 See [Future Development of Homebridge Hue](https://github.com/ebaauw/homebridge-hue/issues/1070).
 
+If you have a question, please post a message to the **#hue** channel of the Homebridge community on [Discord](https://discord.gg/hZubhrz).
+
 ### Introduction
 This [Homebridge](https://github.com/homebridge/homebridge) plugin exposes to Apple's [HomeKit](http://www.apple.com/ios/home/) ZigBee devices (lights, plugs, sensors, switches, ...) connected to a [deCONZ](https://github.com/dresden-elektronik/deconz-rest-plugin) gateway by dresden elektronik.
 
