@@ -11,7 +11,9 @@
     "deconz",
     "phoscon",
     "raspbee",
-    "conbee"
+    "conbee",
+    "dresden-elektronik",
+    "dresdenelektronik"
   ],
   "main": "index.js",
   "engines": {
