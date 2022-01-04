@@ -1,4 +1,6 @@
-<span align="center">
+<p align="center">
+  <img src="homebridge-deconz.png" height="200px">  
+</p><span align="center">
 
 # Homebridge deCONZ
 [![Downloads](https://img.shields.io/npm/dt/homebridge-deconz)](https://www.npmjs.com/package/homebridge-deconz)
@@ -18,5 +20,4 @@ Copyright © 2022 Erik Baauw. All rights reserved.
 See [Future Development of Homebridge Hue](https://github.com/ebaauw/homebridge-hue/issues/1070).
 
 ### Introduction
-
 This [Homebridge](https://github.com/homebridge/homebridge) plugin exposes to Apple's [HomeKit](http://www.apple.com/ios/home/) ZigBee devices (lights, plugs, sensors, switches, ...) dresden elektronik [deCONZ](https://github.com/dresden-elektronik/deconz-rest-plugin) gateway.
