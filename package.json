@@ -9,6 +9,7 @@
     "homebridge-plugin",
     "homekit",
     "deconz",
+    "phoscon",
     "raspbee",
     "conbee"
   ],
