@@ -12,7 +12,7 @@
     ]
   },
   "opts": {
-    "recursive": true
+    "recurse": true
   },
   "templates": {
     "monospaceLinks": true
