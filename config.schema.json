@@ -1,0 +1,101 @@
+{
+  "pluginAlias": "deCONZ",
+  "pluginType": "platform",
+  "singular": true,
+  "headerDisplay": "Homebridge plugin for deCONZ",
+  "footerDisplay": "For a detailed description, see the [wiki](https://github.com/ebaauw/homebridge-deconz/wiki/Configuration).",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "description": "Plugin name as displayed in the Homebridge log.",
+        "type": "string",
+        "required": true,
+        "default": "deCONZ"
+      },
+      "forceHttp": {
+        "description": "Use plain http instead of https.",
+        "type": "boolean"
+      },
+      "hosts": {
+        "title": "Gateways",
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "noResponse": {
+        "description": "Report unreachable lights as <i>No Response</i> in HomeKit.",
+        "type": "boolean"
+      },
+      "parallelRequests": {
+        "description": "The number of ansynchronous requests Homebridge deCONZ sends in parallel to a deCONZ gateway.  Default: 10.",
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 30
+      },
+      "stealth": {
+        "description": "Stealth mode: don't make any calls to the Internet.  Default: false.",
+        "type": "boolean"
+      },
+      "timeout": {
+        "description": "The timeout in seconds to wait for a response from a deCONZ gateway.  Default: 5.",
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 30
+      },
+      "waitTimePut": {
+        "description": "The time, in milliseconds, to wait after sending a PUT request, before sending the next PUT request.  Default: 50.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 50
+      },
+      "waitTimePutGroup": {
+        "description": "The time, in milliseconds, to wait after sending a PUT request to a group, before sending the next PUT request.  Default: 1000.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 1000
+      },
+      "waitTimeResend": {
+        "description": "The time, in milliseconds, to wait before resending a request after an ECONNRESET or http status 503 error.  Default: 300.",
+        "type": "integer",
+        "minimum": 100,
+        "maximum": 1000
+      },
+      "waitTimeUpdate": {
+        "description": "The time, in milliseconds, to wait for a change from HomeKit to another characteristic for the same light or group, before updating the deCONZ gateway.  Default: 20.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 500
+      }
+    }
+  },
+  "form": [
+    "name",
+    {
+      "key": "hosts",
+      "type": "array",
+      "items": {
+        "title": "Gateway",
+        "description": "Hostname and port of the deCONZ gateway.  Leave empty to discover gateways.",
+        "type": "string"
+      }
+    },
+    {
+      "type": "fieldset",
+      "expandable": true,
+      "title": "Advanced Settings",
+      "description": "Don't change these, unless you understand what you're doing.",
+      "items": [
+        "forceHttp",
+        "parallelRequests",
+        "stealth",
+        "timeout",
+        "waitTimePut",
+        "waitTimePutGroup",
+        "waitTimeResend",
+        "waitTimeUpdate"
+      ]
+    }
+  ]
+}
