@@ -66,7 +66,7 @@ After two minutes, Homebridge deCONZ will give up, exposing the gateway accessor
 Set _Enabled_ on the _Gateway Settings_ service of the gateway accessory to retry obtaining an API key.
 Homebridge deCONZ will **not** retry to obtain an API key on Homebridge restart.
 
-After setting _Enabled_ on the _Device Settings_ service for Groups Settings, Lights Settings, or Sensors Settings, Homebridge Deconz will expose an accessory for each of the corresponding devices.
+After setting _Enabled_ on the _Device Settings_ service for _Groups Settings_, _Lights Settings_, or _Sensors Settings_, Homebridge Deconz will expose a [device accessory](https://github.com/ebaauw/homebridge-deconz/wiki/Device-Accessory) for each of the corresponding devices.
 When clearing _Enabled_, the corresponding device accessories are removed from HomeKit.  
 Each device accessory has a _Device Settings_ service, to configure the device.
 Clear _Enabled_ on that service, to blacklist the device, and remove the associated accessory from HomeKit.  
