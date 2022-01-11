@@ -63,17 +63,17 @@ In Apple's Home app, this accessory looks like a wireless switch; you'll need an
 When when it connects to a deCONZ gateway for the first time, Homebridge deCONZ will try to obtain an API key for two minutes, before exposing the gateway accessory.
 Unless Homebridge deCONZ runs on the same server as the deCONZ gateway, you need to unlock the gateway to allow Homebridge deCONZ to obtain an API key.
 After two minutes, Homebridge deCONZ will give up, exposing the gateway accessory anyways, but marking it inactive.
-Set _Enabled_ on the _Gateway Settings_ service of the gateway accessory to retry obtaining an API key.
+Set _Expose_ on the _Gateway Settings_ service of the gateway accessory to retry obtaining an API key.
 Homebridge deCONZ will **not** retry to obtain an API key on Homebridge restart.
 
-After setting _Enabled_ on the _Device Settings_ service for _Groups Settings_, _Lights Settings_, or _Sensors Settings_, Homebridge Deconz will expose a [device accessory](https://github.com/ebaauw/homebridge-deconz/wiki/Device-Accessory) for each of the corresponding devices.
-When clearing _Enabled_, the corresponding device accessories are removed from HomeKit.  
+After setting _Expose Lights_, _Expose Sensors_, or _Expose Groups_ on the _Gateway Settings_ service, Homebridge Deconz will expose a [device accessory](https://github.com/ebaauw/homebridge-deconz/wiki/Device-Accessory) for each of the corresponding devices.
+When clearing the characteristic, the corresponding device accessories are removed from HomeKit.  
 Each device accessory has a _Device Settings_ service, to configure the device.
-Clear _Enabled_ on that service, to blacklist the device, and remove the associated accessory from HomeKit.  
+Clear _Expose_ on that service, to blacklist the device, and remove the associated accessory from HomeKit.  
 The gateway accessory gains an additional _Device Settings_ service for each blacklisted device.
-To re-expose the corresponding accessory, set _Enabled_ on that service.  
+To re-expose the corresponding accessory, set _Expose_ on that service.  
 Note that, unlike Homebridge Hue, Homebridge deCONZ handles blacklisting per device, instead of per resource.
-Exposing _Lights_ will include the ZHAConsumption and ZHAPower `/sensors` resources for smart plugs, and the ZHABattery for window covering devices; exposing _Sensors_ will exclude these.  
+Setting _Expose Lights_ will include the ZHAConsumption and ZHAPower `/sensors` resources for smart plugs, and the ZHABattery for window covering devices; setting _Expose Sensors_ will exclude these.  
 Note that HomeKit doesn't like configuration changes.
 Allow ample time after exposing or removing accessories for HomeKit to sync the changed configuration to all Apple devices.
 
