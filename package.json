@@ -16,6 +16,9 @@
     "dresdenelektronik"
   ],
   "main": "index.js",
+  "bin": {
+    "deconz": "cli/deconz.js"
+  },
   "engines": {
     "deCONZ": "2.13.4",
     "homebridge": "^1.3.9",
