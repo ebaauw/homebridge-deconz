@@ -78,3 +78,11 @@ Note that HomeKit doesn't like configuration changes.
 Allow ample time after exposing or removing accessories for HomeKit to sync the changed configuration to all Apple devices.
 
 Note that currently, each device accessory only carries a dummy _Stateless Programmable Switch_ service (to make it visible in Home).
+
+### Command-Line Utility
+Homebridge deCONZ includes the `deconz` command-line utility, to discover,
+monitor, and interact with a deCONZ gateway.
+For more details, issue:
+```
+deconz --help
+```
