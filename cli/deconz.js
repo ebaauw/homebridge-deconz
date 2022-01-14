@@ -706,7 +706,7 @@ class Main extends homebridgeLib.CommandLineTool {
     this.jsonFormatter = new homebridgeLib.JsonFormatter(
       mode === 'service' ? { noWhiteSpace: true } : {}
     )
-    const WsMonitor = require('../lib/WsMonitor')
+    const WsMonitor = require('../lib/DeconzWsClient')
     const { websocketport } = await this.client.get('/config')
     options.host = this.client.host + ':' + websocketport
     this.wsMonitor = new WsMonitor(options)
@@ -716,10 +716,22 @@ class Main extends homebridgeLib.CommandLineTool {
       .on('listening', (url) => { this.log('listening on %s', url) })
       .on('closed', (url) => { this.log('connection to %s closed', url) })
       .on('changed', (rtype, rid, body) => {
-        this.log('%s/%d: %s', rtype, rid, this.jsonFormatter.stringify(body))
+        let resource = '/' + rtype + '/' + rid
+        if (Object.keys(body).length === 1) {
+          if (body.state != null) {
+            resource += '/state'
+            body = body.state
+          } else if (body.config != null) {
+            resource += '/config'
+            body = body.config
+          }
+        }
+        this.log('%s: %s', resource, this.jsonFormatter.stringify(body))
       })
       .on('added', (rtype, rid, body) => {
-        this.log('/%s/%d: %s', rtype, rid, this.jsonFormatter.stringify(body))
+        this.log(
+          '/%s/%d: added: %s', rtype, rid, this.jsonFormatter.stringify(body)
+        )
       })
       .on('sceneRecall', (resource) => {
         this.log('%s: recall', resource)
