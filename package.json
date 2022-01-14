@@ -27,7 +27,7 @@
   "dependencies": {
     "homebridge-lib": "~5.1.24-4",
     "semver": "^7.3.5",
-    "ws": "^8.4.0",
+    "ws": "^8.4.2",
     "xml2js": "~0.4.23"
   },
   "scripts": {
