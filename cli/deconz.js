@@ -31,7 +31,6 @@ const usage = {
   description: `${b('description')} [${b('-hs')}]`,
   getApiKey: `${b('getApiKey')} [${b('-hv')}]`,
   unlock: `${b('unlock')} [${b('-hv')}]`,
-  touchlink: `${b('touchlink')} [${b('-hv')}]`,
   search: `${b('search')} [${b('-hv')}]`,
 
   probe: `${b('probe')} [${b('-hv')}] [${b('-t')} ${u('timeout')}] ${u('light')}`,
@@ -53,7 +52,6 @@ const description = {
 
   getApiKey: 'Obtain an API key for the gateway.',
   unlock: 'Unlock the gateway so new clients can obtain an API key.',
-  touchlink: 'Initiate a touchlink scan.',
   search: 'Initiate a seach for new devices.',
 
   probe: `Probe ${u('light')} for supported colour (temperature) range.`,
@@ -118,9 +116,6 @@ Commands:
 
   ${usage.unlock}
   ${description.unlock}
-
-  ${usage.touchlink}
-  ${description.touchlink}
 
   ${usage.search}
   ${description.search}
@@ -306,18 +301,6 @@ Parameters:
 Usage: ${b('deconz')} ${usage.unlock}
 
 ${description.unlock}
-
-Parameters:
-  ${b('-h')}, ${b('--help')}
-  Print this help and exit.
-
-  ${b('-v')}, ${b('--verbose')}
-  Print full API output.`,
-  touchlink: `${description.deconz}
-
-Usage: ${b('deconz')} ${usage.touchlink}
-
-${description.touchlink}
 
 Parameters:
   ${b('-h')}, ${b('--help')}
@@ -829,10 +812,6 @@ class Main extends homebridgeLib.CommandLineTool {
 
   async unlock (...args) {
     return this.simpleCommand('unlock', ...args)
-  }
-
-  async touchlink (...args) {
-    return this.simpleCommand('touchlink', ...args)
   }
 
   async search (...args) {
