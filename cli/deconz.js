@@ -8,8 +8,7 @@
 'use strict'
 
 const fs = require('fs')
-const DeconzClient = require('../lib/DeconzClient')
-const DeconzDiscovery = require('../lib/DeconzDiscovery')
+const Deconz = require('../lib/Deconz')
 const homebridgeLib = require('homebridge-lib')
 const packageJson = require('../package.json')
 
@@ -433,7 +432,7 @@ class Main extends homebridgeLib.CommandLineTool {
 
   async _main () {
     this.clargs = this.parseArguments()
-    this.deconzDiscovery = new DeconzDiscovery({
+    this.deconzDiscovery = new Deconz.Discovery({
       timeout: this.clargs.options.timeout
     })
     this.deconzDiscovery
@@ -518,7 +517,7 @@ class Main extends homebridgeLib.CommandLineTool {
         'missing API key - unlock gateway and run "deconz%s getApiKey"', args
       )
     }
-    this.client = new DeconzClient(this.clargs.options)
+    this.client = new Deconz.Client(this.clargs.options)
     this.client
       .on('error', (error) => {
         if (error.request.id !== this.requestId) {
