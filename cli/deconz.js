@@ -517,7 +517,7 @@ class Main extends homebridgeLib.CommandLineTool {
         'missing API key - unlock gateway and run "deconz%s getApiKey"', args
       )
     }
-    this.client = new Deconz.Client(this.clargs.options)
+    this.client = new Deconz.ApiClient(this.clargs.options)
     this.client
       .on('error', (error) => {
         if (error.request.id !== this.requestId) {
@@ -688,10 +688,9 @@ class Main extends homebridgeLib.CommandLineTool {
     this.jsonFormatter = new homebridgeLib.JsonFormatter(
       mode === 'service' ? { noWhiteSpace: true } : {}
     )
-    const WsMonitor = require('../lib/DeconzWsClient')
     const { websocketport } = await this.client.get('/config')
     options.host = this.client.host + ':' + websocketport
-    this.wsMonitor = new WsMonitor(options)
+    this.wsMonitor = new Deconz.WsClient(options)
     this.setOptions({ mode: mode })
     this.wsMonitor
       .on('error', (error) => { this.error(error) })
