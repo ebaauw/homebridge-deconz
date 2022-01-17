@@ -69,7 +69,7 @@
         "maximum": 2000
       },
       "waitTimeUpdate": {
-        "description": "The time, in milliseconds, to wait for a change from HomeKit to another characteristic for the same light or group, before updating the deCONZ gateway.  Default: 20.",
+        "description": "The time, in milliseconds, to wait for a change from HomeKit to another characteristic for the same light or group, before updating the deCONZ gateway.  Default: 100.",
         "type": "integer",
         "minimum": 0,
         "maximum": 500
