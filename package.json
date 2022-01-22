@@ -21,11 +21,11 @@
   },
   "engines": {
     "deCONZ": "2.13.4",
-    "homebridge": "^1.3.9",
+    "homebridge": "^1.4.0",
     "node": "^16.13.2"
   },
   "dependencies": {
-    "homebridge-lib": "~5.1.24-6",
+    "homebridge-lib": "~5.2.0",
     "semver": "^7.3.5",
     "ws": "^8.4.2",
     "xml2js": "~0.4.23"
