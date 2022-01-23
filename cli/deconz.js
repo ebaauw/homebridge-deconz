@@ -307,6 +307,18 @@ Parameters:
 
   ${b('-v')}, ${b('--verbose')}
   Print full API output.`,
+  search: `${description.search}
+
+Usage: ${b('deconz')} ${usage.search}
+
+${description.search}
+
+Parameters:
+  ${b('-h')}, ${b('--help')}
+  Print this help and exit.
+
+  ${b('-v')}, ${b('--verbose')}
+  Print full API output.`,
   probe: `${description.deconz}
 
 Usage: ${b('deconz')} ${usage.probe}
