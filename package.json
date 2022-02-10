@@ -22,10 +22,11 @@
   "engines": {
     "deCONZ": "2.13.4",
     "homebridge": "^1.4.0",
-    "node": "^16.13.2"
+    "node": "^16.14.0"
   },
   "dependencies": {
-    "homebridge-lib": "~5.2.2",
+    "@homebridge/plugin-ui-utils": "~0.0.19",
+    "homebridge-lib": "~5.2.3-0",
     "semver": "^7.3.5",
     "ws": "^8.4.2",
     "xml2js": "~0.4.23"
