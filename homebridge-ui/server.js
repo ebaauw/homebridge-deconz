@@ -5,27 +5,39 @@
 
 'use strict'
 
-const { HomebridgePluginUiServer } = require('@homebridge/plugin-ui-utils')
+const {
+  HomebridgePluginUiServer, RequestError
+} = require('@homebridge/plugin-ui-utils')
 
-// your class MUST extend the HomebridgePluginUiServer
 class UiServer extends HomebridgePluginUiServer {
   constructor () {
-    console.log('hello, world')
-    // super must be called first
     super()
 
-    // Example: create api endpoint request handlers (example only)
-    this.onRequest('/hello', async (payload) => {
-      console.log('request: /hello %j', payload)
-      return { hello: 'world' }
+    this.onRequest('/cachedAccessories', async (cachedAccessories) => {
+      try {
+        // console.log('%d accessories', cachedAccessories.length)
+        const gateways = cachedAccessories.filter((accessory) => {
+          return accessory.plugin === 'homebridge-deconz' &&
+            accessory.context != null &&
+            accessory.context.className === 'Gateway'
+        })
+        // console.log('%d gateways', gateways.length)
+        const result = {}
+        for (const gateway of gateways) {
+          const { host, apiKey } = gateway.context
+          if (apiKey != null) {
+            result[host] = apiKey
+          }
+        }
+        console.log('%d gateways: %j', Object.keys(result).length, result)
+        return result
+      } catch (error) {
+        throw new RequestError(error)
+      }
     })
 
-    // this.ready() must be called to let the UI know you are ready to accept api calls
     this.ready()
   }
 }
 
-// start the instance of the class
-(() => {
-  return new UiServer()
-})()
+new UiServer() // eslint-disable-line no-new
