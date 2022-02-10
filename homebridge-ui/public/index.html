@@ -1,0 +1,29 @@
+<!--
+homebridge-deconz/homebridge-ui/public/index.html
+
+Homebridge plug-in for deCONZ.
+Copyright © 2022 Erik Baauw. All rights reserved.
+-->
+
+<link rel="stylesheet" href="style.css">
+
+<div class="card">
+  <div class="form-group">
+    <label for="exampleInputEmail1">Email address</label>
+    <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+    <small id="emailHelp" class="form-text text-muted">Help text...</small>
+  </div>
+</div>
+
+<script>
+(async () => {
+  // get the current homebridge config
+  const pluginConfig = await homebridge.getPluginConfig()
+  homebridge.showSchemaForm()
+
+  // make requests to your server.js script
+  const result = await homebridge.request('/hello', { name: 'world' });
+
+  homebridge.toast.success('Success', `Hello, `${result.hello}`)
+})();
+</script>
