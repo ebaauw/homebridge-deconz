@@ -19,8 +19,7 @@ Copyright © 2022 Erik Baauw. All rights reserved.
 ### Work in Progress
 See [Future Development of Homebridge Hue](https://github.com/ebaauw/homebridge-hue/issues/1070) for positioning Homebridge deCONZ versus Homebridge Hue.
 
-The current pre-release of Homebridge deCONZ is not yet functional.
-I'm using it to stress-test the technical framework.
+Homebridge deCONZ is still under development.
 See [Releases](https://github.com/ebaauw/homebridge-deconz/releases) for more details.
 
 If you have a question, please post a message to the **#hue** channel of the Homebridge community on [Discord](https://discord.gg/hZubhrz).
@@ -60,13 +59,13 @@ See the [Wiki](https://github.com/ebaauw/homebridge-deconz/wiki/Configuration) f
 Homebridge deCONZ exposes a [gateway accessory](https://github.com/ebaauw/homebridge-deconz/wiki/Gateway-Accessory) for each deCONZ gateway.
 In Apple's Home app, this accessory looks like a wireless switch; you'll need another HomeKit app to configure the accessory.
 
-When when it connects to a deCONZ gateway for the first time, Homebridge deCONZ will try to obtain an API key for two minutes, before exposing the gateway accessory.
+When it connects to a deCONZ gateway for the first time, Homebridge deCONZ will try to obtain an API key for two minutes, before exposing the gateway accessory.
 Unless Homebridge deCONZ runs on the same server as the deCONZ gateway, you need to unlock the gateway to allow Homebridge deCONZ to obtain an API key.
 After two minutes, Homebridge deCONZ will give up, exposing the gateway accessory anyways, but marking it inactive.
 Set _Expose_ on the _Gateway Settings_ service of the gateway accessory to retry obtaining an API key.
 Homebridge deCONZ will **not** retry to obtain an API key on Homebridge restart.
 
-After setting _Expose Lights_, _Expose Sensors_, or _Expose Groups_ on the _Gateway Settings_ service, Homebridge Deconz will expose a [device accessory](https://github.com/ebaauw/homebridge-deconz/wiki/Device-Accessory) for each of the corresponding devices.
+After setting _Expose Lights_, _Expose Sensors_, or _Expose Groups_ on the _Gateway Settings_ service, Homebridge deCONZ will expose a [device accessory](https://github.com/ebaauw/homebridge-deconz/wiki/Device-Accessory) for each of the corresponding devices.
 When clearing the characteristic, the corresponding device accessories are removed from HomeKit.  
 Each device accessory has a _Device Settings_ service, to configure the device.
 Clear _Expose_ on that service, to blacklist the device, and remove the associated accessory from HomeKit.  
@@ -76,8 +75,6 @@ Note that, unlike Homebridge Hue, Homebridge deCONZ handles blacklisting per dev
 Setting _Expose Lights_ will include the ZHAConsumption and ZHAPower `/sensors` resources for smart plugs, and the ZHABattery for window covering devices; setting _Expose Sensors_ will exclude these.  
 Note that HomeKit doesn't like configuration changes.
 Allow ample time after exposing or removing accessories for HomeKit to sync the changed configuration to all Apple devices.
-
-Note that currently, each device accessory only carries a dummy _Stateless Programmable Switch_ service (to make it visible in Home).
 
 ### Command-Line Utility
 Homebridge deCONZ includes the `deconz` command-line utility, to discover,
