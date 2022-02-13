@@ -28,7 +28,7 @@
     "@homebridge/plugin-ui-utils": "~0.0.19",
     "homebridge-lib": "~5.2.3",
     "semver": "^7.3.5",
-    "ws": "^8.4.2",
+    "ws": "^8.5.0",
     "xml2js": "~0.4.23"
   },
   "scripts": {
