@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="homebridge-deconz.png" height="200px">  
+  <img src="homebridge-ui/public/homebridge-deconz.png" height="200px">  
 </p><span align="center">
 
 # Homebridge deCONZ
