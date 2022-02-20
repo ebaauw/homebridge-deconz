@@ -6,37 +6,56 @@
 'use strict'
 
 const {
-  HomebridgePluginUiServer, RequestError
+  HomebridgePluginUiServer // , RequestError
 } = require('@homebridge/plugin-ui-utils')
+const { HttpClient, formatError } = require('homebridge-lib')
 
 class UiServer extends HomebridgePluginUiServer {
   constructor () {
     super()
+    this.clients = {}
 
-    this.onRequest('/cachedAccessories', async (cachedAccessories) => {
+    this.onRequest('get', async (params) => {
       try {
-        // console.log('%d accessories', cachedAccessories.length)
-        const gateways = cachedAccessories.filter((accessory) => {
-          return accessory.plugin === 'homebridge-deconz' &&
-            accessory.context != null &&
-            accessory.context.className === 'Gateway'
-        })
-        // console.log('%d gateways', gateways.length)
-        const result = {}
-        for (const gateway of gateways) {
-          const { host, apiKey } = gateway.context
-          if (apiKey != null) {
-            result[host] = apiKey
-          }
-        }
-        console.log('%d gateways: %j', Object.keys(result).length, result)
-        return result
+        const { uiPort, path } = params
+        const client = this.getClient(uiPort)
+        const { body } = await client.get(path)
+        return body
       } catch (error) {
-        throw new RequestError(error)
+        if (!(error instanceof HttpClient.HttpError)) {
+          console.log(formatError(error))
+        }
+      }
+    })
+
+    this.onRequest('put', async (params) => {
+      try {
+        const { uiPort, path, body } = params
+        const client = this.getClient(uiPort)
+        const { response } = await client.put(path, body)
+        return response
+      } catch (error) {
+        if (!(error instanceof HttpClient.HttpError)) {
+          console.log(formatError(error))
+        }
       }
     })
 
     this.ready()
+  }
+
+  getClient (uiPort) {
+    if (this.clients[uiPort] == null) {
+      this.clients[uiPort] = new HttpClient({
+        host: 'localhost:' + uiPort,
+        keepAlive: true
+      })
+      this.clients[uiPort]
+        .on('error', (error) => {
+          console.log('request %d: %s', error.request.id, formatError(error))
+        })
+    }
+    return this.clients[uiPort]
   }
 }
 

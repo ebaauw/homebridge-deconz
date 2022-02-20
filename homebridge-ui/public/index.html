@@ -6,19 +6,243 @@ Copyright © 2022 Erik Baauw. All rights reserved.
 -->
 
 <link rel="stylesheet" href="style.css">
+<p align="center">
+  <img src="homebridge-deconz.png" height="200px">
+</p>
 
 <script>
+let pluginConfig
+
+async function showFormGateways (gateway) {
+  homebridge.showSpinner()
+  const cachedAccessories = await homebridge.getCachedAccessories()
+  const cachedGateways = cachedAccessories.filter((accessory) => {
+    return accessory.plugin === 'homebridge-deconz' &&
+      accessory.context != null &&
+      accessory.context.className === 'Gateway'
+  })
+  const result = {}
+  for (const gateway of cachedGateways) {
+    if (gateway.context.uiPort == null) {
+      continue
+    }
+    const pong = await homebridge.request(
+      'get', { uiPort: gateway.context.uiPort, path: '/ping' }
+    )
+    if (pong === 'pong') {
+      result[gateway.context.host] = gateway.context
+    }
+  }
+  const gateways = Object.keys(result).sort()
+  homebridge.hideSpinner()
+  if (gateways.length === 0) {
+    homebridge.showSchemaForm()
+    return
+  }
+  const form = homebridge.createForm({
+    schema: {
+      type: 'object',
+      properties: {
+        gateway: {
+          title: 'Connected Gateways',
+          type: 'string',
+          oneOf: gateways.map((name) => { return { title: name, enum: [name] } }),
+          required: true
+        }
+      }
+    },
+    layout: null,
+    form: null
+  }, {
+    gateway: gateway != null ? gateway : gateways[0]
+  }, 'Gateway Settings', 'Homebridge Settings')
+  form.onChange(async (form) => {
+    // showFormGatewaySettings(result[form.gateway])
+  })
+  form.onSubmit(async (form) => {
+    await showFormGatewaySettings(result[form.gateway])
+  })
+  form.onCancel(() => { homebridge.showSchemaForm() })
+}
+
+async function showFormGatewaySettings (gateway, device) {
+  homebridge.showSpinner()
+  const data = await homebridge.request(
+    'get', {
+      uiPort: gateway.uiPort,
+      path: '/gateways/' + gateway.id
+    }
+  )
+  const values = {}
+  for (const rtype in data.deviceByRidByRtype) {
+    values[rtype] = []
+    for (const rid in data.deviceByRidByRtype[rtype]) {
+      const device = data.deviceByRidByRtype[rtype][rid]
+      values[rtype].push({
+        title: ['', rtype, rid].join('/') + ': ' +
+          device.resourceBySubtype[device.primary].body.name,
+        enum: [device.id]
+      })
+    }
+  }
+  data.lightsDevice = values.lights[0].enum[0]
+  data.sensorsDevice = values.sensors[0].enum[0]
+  data.groupsDevice = values.groups[0].enum[0]
+  homebridge.hideSpinner()
+  const form = homebridge.createForm({
+    schema: {
+      type: 'object',
+      properties: {
+        expose: {
+          title: 'Expose',
+          type: 'boolean'
+        },
+        lights: {
+          title: 'Lights',
+          type: 'boolean',
+        },
+        sensors: {
+          title: 'Sensors',
+          type: 'boolean',
+        },
+        groups: {
+          title: 'Groups',
+          type: 'boolean',
+        },
+        schedules: {
+          title: 'Schedules',
+          type: 'boolean',
+        },
+        logLevel: {
+          title: 'Log Level',
+          type: 'string',
+          oneOf: ['0', '1', '2', '3'].map((level) => { return { title: level, enum: [level] } }),
+          required: true,
+          condition: {
+            functionBody: 'return model.expose'
+          }
+        },
+        lightsDevice: {
+          title: 'Device',
+          type: 'string',
+          oneOf: values.lights,
+          required: true
+        },
+        sensorsDevice: {
+          title: 'Device',
+          type: 'string',
+          oneOf: values.sensors,
+          required: true
+        },
+        groupsDevice: {
+          title: 'Device',
+          type: 'string',
+          oneOf: values.groups,
+          required: true
+        }
+      }
+    },
+    layout: null,
+    form: [
+      {
+        type: 'fieldset',
+        title: `${gateway.context.host} Gateway Settings`
+      },
+      'expose',
+      'logLevel',
+      {
+        type: 'flex',
+        'flex-flow': 'row',
+        title: 'Automatically Expose New',
+        items: [
+          'lights',
+          'sensors',
+          'groups',
+          'schedules'
+        ],
+        condition: {
+          functionBody: 'return model.expose'
+        }
+      },
+      {
+        type: 'fieldset',
+        items: [
+          {
+            type: 'tabs',
+            tabs: [
+              {
+                title: 'Lights',
+                items: [
+                  'lightsDevice'
+                ]
+              },
+              {
+                title: 'Sensors',
+                items: [
+                  'sensorsDevice'
+                ]
+              },
+              {
+                title: 'Groups',
+                items: [
+                  'groupsDevice'
+                ]
+              }
+            ]
+          }
+        ],
+        condition: {
+          functionBody: 'return model.expose'
+        }
+      }
+    ]
+  }, data, 'Device Settings', 'Done')
+  form.onChange((form) => {})
+  form.onSubmit((form) => {
+    showFormDeviceSettings(gateway, form.lightsDevice)
+  })
+  form.onCancel((form) => {
+    showFormGateways(gateway.context.host)
+  })
+}
+
+async function showFormDeviceSettings (gateway, device) {
+  homebridge.showSpinner()
+  homebridge.hideSpinner()
+  const form = homebridge.createForm({
+    schema: {
+      type: 'object',
+      properties: {
+        gateway: {
+          type: 'string'
+        },
+        device: {
+          type: 'string'
+        }
+      }
+    }
+  }, {
+    gateway: gateway.context.host,
+    device: device
+  }, 'OK', 'Cancel')
+  form.onChange((form) => {})
+  form.onSubmit((form) => {
+    showFormGatewaySettings(gateway)
+  })
+  form.onCancel((form) => {
+    showFormGatewaySettings(gateway)
+  })
+}
+
 (async () => {
   try {
-    homebridge.showSchemaForm()
-
     // const pluginConfig = await homebridge.getPluginConfig()
     // const pluginConfigSchema = await homebridge.getPluginConfigSchema()
-    const cachedAccessories = await homebridge.getCachedAccessories()
-
-    const result = await homebridge.request('/cachedAccessories', cachedAccessories)
-    const nGateways = Object.keys(result).length
-    homebridge.toast.success(`${nGateways} gateways`)
+    // const cachedAccessories = await homebridge.getCachedAccessories()
+    // const result = await homebridge.request('/cachedAccessories', cachedAccessories)
+    // const nGateways = Object.keys(result).length
+    // homebridge.toast.success(`${nGateways} gateways`)
+    await showFormGateways()
   } catch (error) {
     console.error(error)
   }
