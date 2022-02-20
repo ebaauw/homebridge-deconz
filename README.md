@@ -1,6 +1,7 @@
 <p align="center">
   <img src="homebridge-ui/public/homebridge-deconz.png" height="200px">  
-</p><span align="center">
+</p>
+<span align="center">
 
 # Homebridge deCONZ
 [![Downloads](https://img.shields.io/npm/dt/homebridge-deconz)](https://www.npmjs.com/package/homebridge-deconz)
