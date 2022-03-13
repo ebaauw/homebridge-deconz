@@ -5,58 +5,54 @@
 
 'use strict'
 
-const {
-  HomebridgePluginUiServer // , RequestError
-} = require('@homebridge/plugin-ui-utils')
-const { HttpClient, formatError } = require('homebridge-lib')
+const { UiServer } = require('homebridge-lib')
+const Deconz = require('../lib/Deconz')
 
-class UiServer extends HomebridgePluginUiServer {
+class DeconzUiServer extends UiServer {
   constructor () {
     super()
-    this.clients = {}
 
-    this.onRequest('get', async (params) => {
-      try {
-        const { uiPort, path } = params
-        const client = this.getClient(uiPort)
-        const { body } = await client.get(path)
-        return body
-      } catch (error) {
-        if (!(error instanceof HttpClient.HttpError)) {
-          console.log(formatError(error))
-        }
-      }
-    })
-
-    this.onRequest('put', async (params) => {
-      try {
-        const { uiPort, path, body } = params
-        const client = this.getClient(uiPort)
-        const { response } = await client.put(path, body)
-        return response
-      } catch (error) {
-        if (!(error instanceof HttpClient.HttpError)) {
-          console.log(formatError(error))
-        }
-      }
-    })
-
-    this.ready()
-  }
-
-  getClient (uiPort) {
-    if (this.clients[uiPort] == null) {
-      this.clients[uiPort] = new HttpClient({
-        host: 'localhost:' + uiPort,
-        keepAlive: true
-      })
-      this.clients[uiPort]
-        .on('error', (error) => {
-          console.log('request %d: %s', error.request.id, formatError(error))
+    this.onRequest('discover', async (params) => {
+      if (this.discovery == null) {
+        this.discovery = new Deconz.Discovery({
+          // forceHttp: this.config.forceHttp,
+          // timeout: this.config.timeout
         })
-    }
-    return this.clients[uiPort]
+        this.discovery
+          .on('error', (error) => {
+            this.log(
+              '%s: request %d: %s %s', error.request.name,
+              error.request.id, error.request.method, error.request.resource
+            )
+            this.warn(
+              '%s: request %d: %s', error.request.name, error.request.id, error
+            )
+          })
+          .on('request', (request) => {
+            this.debug(
+              '%s: request %d: %s %s', request.name,
+              request.id, request.method, request.resource
+            )
+          })
+          .on('response', (response) => {
+            this.debug(
+              '%s: request %d: %d %s', response.request.name,
+              response.request.id, response.statusCode, response.statusMessage
+            )
+          })
+          .on('found', (name, id, address) => {
+            this.debug('%s: found %s at %s', name, id, address)
+          })
+          .on('searching', (host) => {
+            this.debug('upnp: listening on %s', host)
+          })
+          .on('searchDone', () => { this.debug('upnp: search done') })
+      }
+      const configs = await this.discovery.discover()
+      return configs
+    })
+    this.ready()
   }
 }
 
-new UiServer() // eslint-disable-line no-new
+new DeconzUiServer() // eslint-disable-line no-new
