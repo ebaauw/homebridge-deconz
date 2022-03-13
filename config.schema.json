@@ -2,7 +2,7 @@
   "pluginAlias": "deCONZ",
   "pluginType": "platform",
   "singular": true,
-  "customUi": true,
+  "customUi": false,
   "headerDisplay": "Homebridge plugin for deCONZ",
   "footerDisplay": "For a detailed description, see the [wiki](https://github.com/ebaauw/homebridge-deconz/wiki/Configuration).",
   "schema": {
@@ -77,7 +77,7 @@
       }
     }
   },
-  "form": [
+  "layout": [
     "name",
     {
       "key": "hosts",
