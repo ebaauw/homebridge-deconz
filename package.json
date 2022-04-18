@@ -25,8 +25,8 @@
     "node": "^16.14.2"
   },
   "dependencies": {
-    "homebridge-lib": "~5.3.2",
-    "semver": "^7.3.5",
+    "homebridge-lib": "~5.4.0",
+    "semver": "^7.3.7",
     "ws": "^8.5.0",
     "xml2js": "~0.4.23"
   },
