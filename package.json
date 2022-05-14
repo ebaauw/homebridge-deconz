@@ -20,12 +20,12 @@
     "deconz": "cli/deconz.js"
   },
   "engines": {
-    "deCONZ": "2.14.1",
+    "deCONZ": "2.15.3",
     "homebridge": "^1.4.0",
     "node": "^16.14.2"
   },
   "dependencies": {
-    "homebridge-lib": "~5.4.0",
+    "homebridge-lib": "~5.5.0",
     "semver": "^7.3.7",
     "ws": "^8.5.0",
     "xml2js": "~0.4.23"
