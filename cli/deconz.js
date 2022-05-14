@@ -703,7 +703,7 @@ class Main extends homebridgeLib.CommandLineTool {
     const { websocketport } = await this.client.get('/config')
     options.host = this.client.host + ':' + websocketport
     this.wsMonitor = new Deconz.WsClient(options)
-    this.setOptions({ mode: mode })
+    this.setOptions({ mode })
     this.wsMonitor
       .on('error', (error) => { this.error(error) })
       .on('listening', (url) => { this.log('listening on %s', url) })
@@ -813,7 +813,7 @@ class Main extends homebridgeLib.CommandLineTool {
       .parse(...args)
     const apiKey = await this.client.getApiKey('deconz')
     this.print(jsonFormatter.stringify(apiKey))
-    this.gateways[this.bridgeid] = { apiKey: apiKey }
+    this.gateways[this.bridgeid] = { apiKey }
     if (this.client.fingerprint != null) {
       this.gateways[this.bridgeid].fingerprint = this.client.fingerprint
     }
