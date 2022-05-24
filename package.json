@@ -20,7 +20,7 @@
     "deconz": "cli/deconz.js"
   },
   "engines": {
-    "deCONZ": "2.15.3",
+    "deCONZ": "2.16.1",
     "homebridge": "^1.4.1",
     "node": "^16.15.0"
   },
