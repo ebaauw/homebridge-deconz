@@ -1,0 +1,506 @@
+<!--
+homebridge-deconz/homebridge-ui/public/index.html
+
+Homebridge plug-in for deCONZ.
+Copyright © 2022 Erik Baauw. All rights reserved.
+-->
+
+<link rel="stylesheet" href="style.css">
+<p align="center">
+  <a href="https://github.com/ebaauw/homebridge-deconz/wiki/Configuration" target="_blank">
+    <img src="homebridge-deconz.png" height="200px">
+  </a>
+</p>
+
+<script>
+
+async function showFormPluginConfig () {
+  homebridge.showSpinner()
+  const pluginConfig = await homebridge.getPluginConfig()
+  console.log('pluginConfig: %o', pluginConfig)
+  // const pluginConfigSchema = await homebridge.getPluginConfigSchema()
+  // console.log('pluginConfigSchema: %o', pluginConfigSchema)
+  // const cachedAccessories = await homebridge.getCachedAccessories()
+  // console.log('cachedAccessories: %o', cachedAccessories)
+  // const discoveredGateways = await homebridge.request('discover')
+  // console.log('discovered gateways: %o', discoveredGateways)
+  for (const config of pluginConfig) {
+    if (config._bridge != null) {
+      const cachedAccessories = await homebridge.request('cachedAccessories', {
+        username: config._bridge.username
+      })
+      console.log('%s: cachedAccessories: %o', config.name, cachedAccessories)
+      const cachedGateways = cachedAccessories.filter((accessory) => {
+        return accessory.plugin === 'homebridge-deconz' &&
+          accessory.context != null &&
+          accessory.context.className === 'Gateway'
+      })
+      const result = {}
+      for (const gateway of cachedGateways) {
+        if (gateway.context.uiPort == null) {
+          continue
+        }
+        const pong = await homebridge.request(
+          'get', { uiPort: gateway.context.uiPort, path: '/ping' }
+        )
+        if (pong === 'pong') {
+          result[gateway.context.host] = gateway.context
+        }
+      }
+      const gateways = Object.keys(result).sort()
+      console.log('%s: gateways: %j',config.name, gateways)
+    }
+  }
+  homebridge.hideSpinner()
+
+  const form = homebridge.createForm(
+    {
+      schema: {
+        type: 'object',
+        properties: {
+          config: {
+            title: 'Gateways',
+            description: 'Configure a child bridge per deCONZ gateway.  See <a href="https://github.com/ebaauw/homebridge-deconz/wiki/Configuration" target="_blank">wiki</a> for details.',
+            type: 'array',
+            disabled: true,
+            items: {
+              type: 'object',
+              properties: {
+                host: {
+                  description: 'Gateway hostname and port.',
+                  default: 'localhost:80',
+                  type: 'string',
+                  required: true
+                },
+                name: {
+                  description: 'Homebridge log plugin name.',
+                  default: 'deCONZ',
+                  type: 'string'
+                },
+                _bridge: {
+                  type: 'object',
+                  required: true,
+                  properties: {
+                    name: {
+                      type: 'string',
+                      required: true
+                    },
+                    username: {
+                      type: 'string',
+                      pattern: '^([A-F0-9]{2}:){5}[A-F0-9]{2}$',
+                      placeholder: 'AA:BB:CC:DD:EE:FF',
+                      required: true
+                    },
+                    port: {
+                      type: 'integer',
+                      minimum: 1025,
+                      // maximum: 65535,
+                      required: true
+                    },
+                    manufacturer: {
+                      type: 'string',
+                      enabled: false,
+                      required: true
+                    },
+                    model: {
+                      type: 'string',
+                      required: true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      // layout: null
+      layout: [
+        {
+          type: 'tabarray',
+          title: '{{ value.name }}',
+          items: [
+            {
+              type: 'fieldset',
+              title: 'Gateway Settings',
+              key: 'config[]',
+              items: [
+                {
+                  type: 'flex',
+                  'flex-flow': 'row',
+                  items: [
+                    'config[].host',
+                    'config[].name',
+                  ]
+                }
+              ]
+            },
+            {
+              type: 'flex',
+              'flex-flow': 'row',
+              key: 'config[]',
+              items: [
+                {
+                  type: 'button',
+                  title: 'Connect',
+                  key: 'config[].connect'
+                },
+                {
+                  type: 'button',
+                  title: 'Get API Key',
+                  key: 'config[].getApiKey'
+                },
+                {
+                  type: 'submit',
+                  title: 'Configure',
+                  key: 'config[].configure'
+                }
+              ]
+            },
+            {
+              type: 'fieldset',
+              key: 'config[]._bridge',
+              // expandable: true,
+              title: 'Child Bridge Accessory Settings',
+              items: [
+                {
+                  type: 'flex',
+                  'flex-flow': 'row',
+                  items: [
+                    'config[]._bridge.username',
+                    'config[]._bridge.port'
+                  ]
+                },
+                'config[]._bridge.name',
+                {
+                  type: 'flex',
+                  'flex-flow': 'row',
+                  items: [
+                    'config[]._bridge.manufacturer',
+                    'config[]._bridge.model'
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }, {
+      config: pluginConfig,
+    },
+    'Gateway Settings',
+    'Homebridge Settings'
+  )
+  form.onChange(async (form) => {
+    console.log('change: %o', form)
+  })
+  form.onSubmit(async (form) => {
+    console.log('submit: %o', form)
+  })
+  form.onCancel(async (form) => {
+    console.log('cancel: %o', form)
+  })
+
+}
+
+async function showFormGateways (gateway) {
+  homebridge.showSpinner()
+  const cachedAccessories = await homebridge.getCachedAccessories()
+  const cachedGateways = cachedAccessories.filter((accessory) => {
+    return accessory.plugin === 'homebridge-deconz' &&
+      accessory.context != null &&
+      accessory.context.className === 'Gateway'
+  })
+  const result = {}
+  for (const gateway of cachedGateways) {
+    if (gateway.context.uiPort == null) {
+      continue
+    }
+    const pong = await homebridge.request(
+      'get', { uiPort: gateway.context.uiPort, path: '/ping' }
+    )
+    if (pong === 'pong') {
+      result[gateway.context.host] = gateway.context
+    }
+  }
+  const gateways = Object.keys(result).sort()
+  homebridge.hideSpinner()
+  if (gateways.length === 0) {
+    homebridge.showSchemaForm()
+    return
+  }
+  // const form = homebridge.createForm({
+  //   schema: {
+  //     type: 'object',
+  //     properties: {
+  //       gateway: {
+  //         title: 'Connected Gateways',
+  //         type: 'string',
+  //         oneOf: gateways.map((name) => {
+  //           const config = result[name].context.config
+  //           return {
+  //             title: `${name}: dresden elektronik ${config.modelid} gateway v${config.swversion} / ${config.devicename} ${config.bridgeid}`,
+  //             enum: [name]
+  //           }
+  //         }),
+  //         required: true
+  //       }
+  //     }
+  //   },
+  //   layout: null,
+  //   form: null
+  // }, {
+  //   gateway: gateway != null ? gateway : gateways[0]
+  // }, 'Gateway Settings', 'Homebridge Settings')
+  const form = homebridge.createForm({
+    footerDisplay: 'For a detailed description, see the [wiki](https://github.com/ebaauw/homebridge-deconz/wiki/Configuration).',
+    schema: {
+      type: 'object',
+      properties: {
+        name: {
+          description: 'Plugin name as displayed in the Homebridge log.',
+          type: 'string',
+          required: true,
+          default: 'deCONZ'
+        },
+        gateways: {
+          title: 'Gateways',
+          type: 'array',
+          disabled: true,
+          items: {
+            type: 'object',
+            properties: {
+              host: {
+                description: 'Hostname and port of the deCONZ gateway.',
+                type: 'string'
+              },
+              expose: {
+                description: 'Expose gateway to HomeKit.',
+                type: 'boolean'
+              }
+            }
+          }
+
+        }
+      }
+    } //,
+    // layout: [
+    //   'name',
+    //   {
+    //     key: 'gateways',
+    //     type: 'array',
+    //     buttonText: 'Add Gateway',
+    //     items: [
+    //       {
+    //         type: 'section',
+    //         htmlClass: 'row',
+    //         items: [
+    //           {
+    //             type: 'section',
+    //             htmlClass: 'col',
+    //             items: [
+    //               'gateways[].host'
+    //             ]
+    //           },
+    //           {
+    //             type: 'section',
+    //             htmlClass: 'col',
+    //             items: [
+    //             {
+    //               key: 'gateways[].expose',
+    //               disabled: true
+    //             }
+    //             ]
+    //           }
+    //         ]
+    //       }
+    //     ]
+    //   }
+    // ]
+  }, {
+
+  }, 'Gateway Settings', 'Homebridge Settings')
+  form.onChange(async (form) => {
+    // showFormGatewaySettings(result[form.gateway])
+  })
+  form.onSubmit(async (form) => {
+    await showFormGatewaySettings(result[form.gateways])
+  })
+  form.onCancel(() => { homebridge.showSchemaForm() })
+}
+
+async function showFormGatewaySettings (gateway, device) {
+  homebridge.showSpinner()
+  const data = await homebridge.request(
+    'get', {
+      uiPort: gateway.uiPort,
+      path: '/gateways/' + gateway.id
+    }
+  )
+  const values = {}
+  for (const rtype in data.deviceByRidByRtype) {
+    values[rtype] = []
+    for (const rid in data.deviceByRidByRtype[rtype]) {
+      const device = data.deviceByRidByRtype[rtype][rid]
+      values[rtype].push({
+        title: ['', rtype, rid].join('/') + ': ' +
+          device.resourceBySubtype[device.primary].body.name,
+        enum: [device.id]
+      })
+    }
+  }
+  data.lightsDevice = values.lights[0].enum[0]
+  data.sensorsDevice = values.sensors[0].enum[0]
+  data.groupsDevice = values.groups[0].enum[0]
+  homebridge.hideSpinner()
+  const form = homebridge.createForm({
+    schema: {
+      type: 'object',
+      properties: {
+        expose: {
+          title: 'Expose',
+          type: 'boolean'
+        },
+        lights: {
+          title: 'Lights',
+          type: 'boolean',
+        },
+        sensors: {
+          title: 'Sensors',
+          type: 'boolean',
+        },
+        groups: {
+          title: 'Groups',
+          type: 'boolean',
+        },
+        schedules: {
+          title: 'Schedules',
+          type: 'boolean',
+        },
+        logLevel: {
+          title: 'Log Level',
+          type: 'string',
+          oneOf: ['0', '1', '2', '3'].map((level) => { return { title: level, enum: [level] } }),
+          required: true,
+          condition: {
+            functionBody: 'return model.expose'
+          }
+        },
+        lightsDevice: {
+          title: 'Device',
+          type: 'string',
+          oneOf: values.lights,
+          required: true
+        },
+        sensorsDevice: {
+          title: 'Device',
+          type: 'string',
+          oneOf: values.sensors,
+          required: true
+        },
+        groupsDevice: {
+          title: 'Device',
+          type: 'string',
+          oneOf: values.groups,
+          required: true
+        }
+      }
+    },
+    layout: [
+      {
+        type: 'fieldset',
+        title: `${gateway.context.host} Gateway Settings`
+      },
+      'expose',
+      'logLevel',
+      {
+        type: 'flex',
+        'flex-flow': 'row',
+        title: 'Automatically Expose New',
+        items: [
+          'lights',
+          'sensors',
+          'groups',
+          'schedules'
+        ],
+        condition: {
+          functionBody: 'return model.expose'
+        }
+      },
+      {
+        type: 'fieldset',
+        items: [
+          {
+            type: 'tabs',
+            tabs: [
+              {
+                title: 'Lights',
+                items: [
+                  'lightsDevice'
+                ]
+              },
+              {
+                title: 'Sensors',
+                items: [
+                  'sensorsDevice'
+                ]
+              },
+              {
+                title: 'Groups',
+                items: [
+                  'groupsDevice'
+                ]
+              }
+            ]
+          }
+        ],
+        condition: {
+          functionBody: 'return model.expose'
+        }
+      }
+    ]
+  }, data, 'Device Settings', 'Done')
+  form.onChange((form) => {})
+  form.onSubmit((form) => {
+    showFormDeviceSettings(gateway, form.lightsDevice)
+  })
+  form.onCancel((form) => {
+    showFormGateways(gateway.context.host)
+  })
+}
+
+async function showFormDeviceSettings (gateway, device) {
+  homebridge.showSpinner()
+  homebridge.hideSpinner()
+  const form = homebridge.createForm({
+    schema: {
+      type: 'object',
+      properties: {
+        gateway: {
+          type: 'string'
+        },
+        device: {
+          type: 'string'
+        }
+      }
+    }
+  }, {
+    gateway: gateway.context.host,
+    device: device
+  }, 'OK', 'Cancel')
+  form.onChange((form) => {})
+  form.onSubmit((form) => {
+    showFormGatewaySettings(gateway)
+  })
+  form.onCancel((form) => {
+    showFormGatewaySettings(gateway)
+  })
+}
+
+(async () => {
+  try {
+    await showFormPluginConfig()
+  } catch (error) {
+    console.error(error)
+  }
+})()
+</script>

@@ -6,501 +6,290 @@ Copyright © 2022 Erik Baauw. All rights reserved.
 -->
 
 <link rel="stylesheet" href="style.css">
+<script src="https://unpkg.com/vue@3"></script>
+
 <p align="center">
   <a href="https://github.com/ebaauw/homebridge-deconz/wiki/Configuration" target="_blank">
     <img src="homebridge-deconz.png" height="200px">
   </a>
 </p>
 
+<div id="app">
+  <!-- v-if can be used on any element, it will only render the element if the condition is true -->
+  <div v-if="view === 'gateways'">
+    <div class="w-100 d-flex justify-content-between align-items-center mb-1">
+      <h4 class="mb-0">Gateways</h4>
+      <!-- @click will call the addGateway method -->
+      <button class="btn btn-primary mr-0" @click="addGateway">Add <i class="fas fa-plus" ></i></button>
+    </div>
+
+    <ul class="list-group">
+      <!-- here we are looping over data.pluginConfig.gateways using v-for -->
+      <li class="list-group-item d-flex justify-content-between align-items-center" v-for="(gateway, $index) in pluginConfig.gateways" :key="$index">
+        <div>
+          {{ gateway.name }}
+          <div class="grey-text">
+            {{ gateway.host }}
+          </div>
+        </div>
+        <div>
+          <div class="btn-group" role="group" aria-label="Basic example">
+            <!-- @click will call the editGateway(gateway) method with the selected gateway as the first argument -->
+            <button class="btn btn-primary" @click="editGateway(gateway)">
+              <i class="fas fa-cog"></i>
+            </button>
+            <!-- @click will call the deleteGateway($index) method with its position in the array / index as the first argument -->
+            <button class="btn btn-danger" @click="deleteGateway($index)">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <div v-if="view === 'edit-gateway'">
+    <h4 class="mb-2">
+      Configure Gateway
+      <span v-if="selectedGateway">
+        - {{ selectedGateway.name }}
+      </span>
+    </h4>
+
+    <!-- @click will call the connect method -->
+    <button class="btn btn-primary ml-0" @click="connect">Connect</button>
+
+    <!-- @click will call the getApiKey method -->
+    <button class="btn btn-primary" @click="getApiKey">Get API Key</button>
+  </div>
+</div>
+
 <script>
+  const { createApp } = Vue;
 
-async function showFormPluginConfig () {
-  homebridge.showSpinner()
-  const pluginConfig = await homebridge.getPluginConfig()
-  console.log('pluginConfig: %o', pluginConfig)
-  // const pluginConfigSchema = await homebridge.getPluginConfigSchema()
-  // console.log('pluginConfigSchema: %o', pluginConfigSchema)
-  // const cachedAccessories = await homebridge.getCachedAccessories()
-  // console.log('cachedAccessories: %o', cachedAccessories)
-  // const discoveredGateways = await homebridge.request('discover')
-  // console.log('discovered gateways: %o', discoveredGateways)
-  for (const config of pluginConfig) {
-    if (config._bridge != null) {
-      const cachedAccessories = await homebridge.request('cachedAccessories', {
-        username: config._bridge.username
-      })
-      console.log('%s: cachedAccessories: %o', config.name, cachedAccessories)
-      const cachedGateways = cachedAccessories.filter((accessory) => {
-        return accessory.plugin === 'homebridge-deconz' &&
-          accessory.context != null &&
-          accessory.context.className === 'Gateway'
-      })
-      const result = {}
-      for (const gateway of cachedGateways) {
-        if (gateway.context.uiPort == null) {
-          continue
-        }
-        const pong = await homebridge.request(
-          'get', { uiPort: gateway.context.uiPort, path: '/ping' }
-        )
-        if (pong === 'pong') {
-          result[gateway.context.host] = gateway.context
-        }
-      }
-      const gateways = Object.keys(result).sort()
-      console.log('%s: gateways: %j',config.name, gateways)
-    }
-  }
-  homebridge.hideSpinner()
-
-  const form = homebridge.createForm(
-    {
-      schema: {
-        type: 'object',
-        properties: {
-          config: {
-            title: 'Gateways',
-            description: 'Configure a child bridge per deCONZ gateway.  See <a href="https://github.com/ebaauw/homebridge-deconz/wiki/Configuration" target="_blank">wiki</a> for details.',
-            type: 'array',
-            disabled: true,
-            items: {
-              type: 'object',
-              properties: {
-                host: {
-                  description: 'Gateway hostname and port.',
-                  default: 'localhost:80',
-                  type: 'string',
-                  required: true
-                },
-                name: {
-                  description: 'Homebridge log plugin name.',
-                  default: 'deCONZ',
-                  type: 'string'
-                },
-                _bridge: {
-                  type: 'object',
-                  required: true,
-                  properties: {
-                    name: {
-                      type: 'string',
-                      required: true
-                    },
-                    username: {
-                      type: 'string',
-                      pattern: '^([A-F0-9]{2}:){5}[A-F0-9]{2}$',
-                      placeholder: 'AA:BB:CC:DD:EE:FF',
-                      required: true
-                    },
-                    port: {
-                      type: 'integer',
-                      minimum: 1025,
-                      // maximum: 65535,
-                      required: true
-                    },
-                    manufacturer: {
-                      type: 'string',
-                      enabled: false,
-                      required: true
-                    },
-                    model: {
-                      type: 'string',
-                      required: true
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      // layout: null
-      layout: [
-        {
-          type: 'tabarray',
-          title: '{{ value.name }}',
-          items: [
-            {
-              type: 'fieldset',
-              title: 'Gateway Settings',
-              key: 'config[]',
-              items: [
-                {
-                  type: 'flex',
-                  'flex-flow': 'row',
-                  items: [
-                    'config[].host',
-                    'config[].name',
-                  ]
-                }
-              ]
-            },
-            {
-              type: 'flex',
-              'flex-flow': 'row',
-              key: 'config[]',
-              items: [
-                {
-                  type: 'button',
-                  title: 'Connect',
-                  key: 'config[].connect'
-                },
-                {
-                  type: 'button',
-                  title: 'Get API Key',
-                  key: 'config[].getApiKey'
-                },
-                {
-                  type: 'submit',
-                  title: 'Configure',
-                  key: 'config[].configure'
-                }
-              ]
-            },
-            {
-              type: 'fieldset',
-              key: 'config[]._bridge',
-              // expandable: true,
-              title: 'Child Bridge Accessory Settings',
-              items: [
-                {
-                  type: 'flex',
-                  'flex-flow': 'row',
-                  items: [
-                    'config[]._bridge.username',
-                    'config[]._bridge.port'
-                  ]
-                },
-                'config[]._bridge.name',
-                {
-                  type: 'flex',
-                  'flex-flow': 'row',
-                  items: [
-                    'config[]._bridge.manufacturer',
-                    'config[]._bridge.model'
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    }, {
-      config: pluginConfig,
-    },
-    'Gateway Settings',
-    'Homebridge Settings'
-  )
-  form.onChange(async (form) => {
-    console.log('change: %o', form)
-  })
-  form.onSubmit(async (form) => {
-    console.log('submit: %o', form)
-  })
-  form.onCancel(async (form) => {
-    console.log('cancel: %o', form)
-  })
-
-}
-
-async function showFormGateways (gateway) {
-  homebridge.showSpinner()
-  const cachedAccessories = await homebridge.getCachedAccessories()
-  const cachedGateways = cachedAccessories.filter((accessory) => {
-    return accessory.plugin === 'homebridge-deconz' &&
-      accessory.context != null &&
-      accessory.context.className === 'Gateway'
-  })
-  const result = {}
-  for (const gateway of cachedGateways) {
-    if (gateway.context.uiPort == null) {
-      continue
-    }
-    const pong = await homebridge.request(
-      'get', { uiPort: gateway.context.uiPort, path: '/ping' }
-    )
-    if (pong === 'pong') {
-      result[gateway.context.host] = gateway.context
-    }
-  }
-  const gateways = Object.keys(result).sort()
-  homebridge.hideSpinner()
-  if (gateways.length === 0) {
-    homebridge.showSchemaForm()
-    return
-  }
-  // const form = homebridge.createForm({
-  //   schema: {
-  //     type: 'object',
-  //     properties: {
-  //       gateway: {
-  //         title: 'Connected Gateways',
-  //         type: 'string',
-  //         oneOf: gateways.map((name) => {
-  //           const config = result[name].context.config
-  //           return {
-  //             title: `${name}: dresden elektronik ${config.modelid} gateway v${config.swversion} / ${config.devicename} ${config.bridgeid}`,
-  //             enum: [name]
-  //           }
-  //         }),
-  //         required: true
-  //       }
-  //     }
-  //   },
-  //   layout: null,
-  //   form: null
-  // }, {
-  //   gateway: gateway != null ? gateway : gateways[0]
-  // }, 'Gateway Settings', 'Homebridge Settings')
-  const form = homebridge.createForm({
-    footerDisplay: 'For a detailed description, see the [wiki](https://github.com/ebaauw/homebridge-deconz/wiki/Configuration).',
+  const gatewaySchema = {
     schema: {
       type: 'object',
       properties: {
+        host: {
+          description: 'Gateway hostname and port.',
+          default: 'localhost:80',
+          type: 'string',
+          required: true
+        },
         name: {
-          description: 'Plugin name as displayed in the Homebridge log.',
-          type: 'string',
-          required: true,
-          default: 'deCONZ'
+          description: 'Homebridge log plugin name.',
+          default: 'deCONZ',
+          type: 'string'
         },
-        gateways: {
-          title: 'Gateways',
-          type: 'array',
-          disabled: true,
-          items: {
-            type: 'object',
-            properties: {
-              host: {
-                description: 'Hostname and port of the deCONZ gateway.',
-                type: 'string'
-              },
-              expose: {
-                description: 'Expose gateway to HomeKit.',
-                type: 'boolean'
-              }
-            }
-          }
-
-        }
-      }
-    } //,
-    // layout: [
-    //   'name',
-    //   {
-    //     key: 'gateways',
-    //     type: 'array',
-    //     buttonText: 'Add Gateway',
-    //     items: [
-    //       {
-    //         type: 'section',
-    //         htmlClass: 'row',
-    //         items: [
-    //           {
-    //             type: 'section',
-    //             htmlClass: 'col',
-    //             items: [
-    //               'gateways[].host'
-    //             ]
-    //           },
-    //           {
-    //             type: 'section',
-    //             htmlClass: 'col',
-    //             items: [
-    //             {
-    //               key: 'gateways[].expose',
-    //               disabled: true
-    //             }
-    //             ]
-    //           }
-    //         ]
-    //       }
-    //     ]
-    //   }
-    // ]
-  }, {
-
-  }, 'Gateway Settings', 'Homebridge Settings')
-  form.onChange(async (form) => {
-    // showFormGatewaySettings(result[form.gateway])
-  })
-  form.onSubmit(async (form) => {
-    await showFormGatewaySettings(result[form.gateways])
-  })
-  form.onCancel(() => { homebridge.showSchemaForm() })
-}
-
-async function showFormGatewaySettings (gateway, device) {
-  homebridge.showSpinner()
-  const data = await homebridge.request(
-    'get', {
-      uiPort: gateway.uiPort,
-      path: '/gateways/' + gateway.id
-    }
-  )
-  const values = {}
-  for (const rtype in data.deviceByRidByRtype) {
-    values[rtype] = []
-    for (const rid in data.deviceByRidByRtype[rtype]) {
-      const device = data.deviceByRidByRtype[rtype][rid]
-      values[rtype].push({
-        title: ['', rtype, rid].join('/') + ': ' +
-          device.resourceBySubtype[device.primary].body.name,
-        enum: [device.id]
-      })
-    }
-  }
-  data.lightsDevice = values.lights[0].enum[0]
-  data.sensorsDevice = values.sensors[0].enum[0]
-  data.groupsDevice = values.groups[0].enum[0]
-  homebridge.hideSpinner()
-  const form = homebridge.createForm({
-    schema: {
-      type: 'object',
-      properties: {
-        expose: {
-          title: 'Expose',
-          type: 'boolean'
+        forceHttp: {
+          description: "Use plain http instead of https.",
+          type: "boolean"
         },
-        lights: {
-          title: 'Lights',
-          type: 'boolean',
+        noResponse: {
+          description: "Report unreachable lights as <i>No Response</i> in HomeKit.",
+          type: "boolean"
         },
-        sensors: {
-          title: 'Sensors',
-          type: 'boolean',
+        parallelRequests: {
+          description:" The number of ansynchronous requests Homebridge deCONZ sends in parallel to a deCONZ gateway.  Default: 10.",
+          type: "integer",
+          minimum: 1,
+          maximum: 30
         },
-        groups: {
-          title: 'Groups',
-          type: 'boolean',
+        stealth: {
+          description: "Stealth mode: don't make any calls to the Internet.  Default: false.",
+          type: "boolean"
         },
-        schedules: {
-          title: 'Schedules',
-          type: 'boolean',
+        timeout: {
+          description: "The timeout in seconds to wait for a response from a deCONZ gateway.  Default: 5.",
+          type: "integer",
+          minimum: 1,
+          maximum: 30
         },
-        logLevel: {
-          title: 'Log Level',
-          type: 'string',
-          oneOf: ['0', '1', '2', '3'].map((level) => { return { title: level, enum: [level] } }),
-          required: true,
-          condition: {
-            functionBody: 'return model.expose'
-          }
+        waitTimePut: {
+          description: "The time, in milliseconds, to wait after sending a PUT request, before sending the next PUT request.  Default: 50.",
+          type: "integer",
+          minimum: 0,
+          maximum: 50
         },
-        lightsDevice: {
-          title: 'Device',
-          type: 'string',
-          oneOf: values.lights,
-          required: true
+        waitTimePutGroup: {
+          description: "The time, in milliseconds, to wait after sending a PUT request to a group, before sending the next PUT request.  Default: 1000.",
+          type: "integer",
+          minimum: 0,
+          maximum: 1000
         },
-        sensorsDevice: {
-          title: 'Device',
-          type: 'string',
-          oneOf: values.sensors,
-          required: true
+        waitTimeResend: {
+          description: "The time, in milliseconds, to wait before resending a request after an ECONNRESET or http status 503 error.  Default: 300.",
+          type: "integer",
+          minimum: 100,
+          maximum: 1000
         },
-        groupsDevice: {
-          title: 'Device',
-          type: 'string',
-          oneOf: values.groups,
-          required: true
+        waitTimeReset: {
+          description: "The timeout in milliseconds, to wait before resetting a characteristic value.  Default: 500.",
+          type: "integer",
+          minimum: 10,
+          maximum: 2000
+        },
+        waitTimeUpdate: {
+          description: "The time, in milliseconds, to wait for a change from HomeKit to another characteristic for the same light or group, before updating the deCONZ gateway.  Default: 100.",
+          type: "integer",
+          minimum: 0,
+          maximum: 500
         }
       }
     },
     layout: [
+      "host",
+      "name",
       {
-        type: 'fieldset',
-        title: `${gateway.context.host} Gateway Settings`
-      },
-      'expose',
-      'logLevel',
-      {
-        type: 'flex',
-        'flex-flow': 'row',
-        title: 'Automatically Expose New',
+        type: "fieldset",
+        expandable: true,
+        title: "Advanced Settings",
+        description: "Don't change these, unless you understand what you're doing.",
         items: [
-          'lights',
-          'sensors',
-          'groups',
-          'schedules'
-        ],
-        condition: {
-          functionBody: 'return model.expose'
-        }
-      },
-      {
-        type: 'fieldset',
-        items: [
-          {
-            type: 'tabs',
-            tabs: [
-              {
-                title: 'Lights',
-                items: [
-                  'lightsDevice'
-                ]
-              },
-              {
-                title: 'Sensors',
-                items: [
-                  'sensorsDevice'
-                ]
-              },
-              {
-                title: 'Groups',
-                items: [
-                  'groupsDevice'
-                ]
-              }
-            ]
-          }
-        ],
-        condition: {
-          functionBody: 'return model.expose'
-        }
+          "forceHttp",
+          "parallelRequests",
+          "stealth",
+          "timeout",
+          "waitTimePut",
+          "waitTimePutGroup",
+          "waitTimeResend",
+          "waitTimeReset",
+          "waitTimeUpdate"
+        ]
       }
     ]
-  }, data, 'Device Settings', 'Done')
-  form.onChange((form) => {})
-  form.onSubmit((form) => {
-    showFormDeviceSettings(gateway, form.lightsDevice)
-  })
-  form.onCancel((form) => {
-    showFormGateways(gateway.context.host)
-  })
-}
+  };
 
-async function showFormDeviceSettings (gateway, device) {
-  homebridge.showSpinner()
-  homebridge.hideSpinner()
-  const form = homebridge.createForm({
-    schema: {
-      type: 'object',
-      properties: {
-        gateway: {
-          type: 'string'
-        },
-        device: {
-          type: 'string'
+  const myApp = createApp({
+    /**
+     * This is called when the app is loaded. It's the entry point.
+     */
+    async created() {
+      const config = await homebridge.getPluginConfig();
+
+      if (!config.length) {
+        // if no config yet, create the basic config required
+        this.pluginConfig = {
+          gateways: [],
+        };
+      } else {
+        // if config does exist, we pretty safely assume only one config block and take this out
+        this.pluginConfig = config[0];
+        if (!Array.isArray(this.pluginConfig.gateways)) {
+          this.pluginConfig.gateways = [];
         }
       }
-    }
-  }, {
-    gateway: gateway.context.host,
-    device: device
-  }, 'OK', 'Cancel')
-  form.onChange((form) => {})
-  form.onSubmit((form) => {
-    showFormGatewaySettings(gateway)
-  })
-  form.onCancel((form) => {
-    showFormGatewaySettings(gateway)
-  })
-}
+    },
+    data() {
+      /**
+       * This is reactive data - it can be accessed in any of the methods via this.key
+       * It can be used in the HTML directly via {{ key }}
+       */
+      return {
+        view: 'gateways',
+        selectedGateway: null,
+        pluginConfig: {
+          gateways: [],
+        },
+      }
+    },
+    watch: {
+      /**
+       * This handler will be called whenever the object of data.pluginConfig changes
+       * Doing it likes this means we don't need to worry about keeping the UI in sync with plugin changes
+       * This will take care of everything as long as we keep data.pluginConfig correct
+       */
+      pluginConfig: {
+        deep: true,
+        handler(newValue, oldValue) {
+          // need to do a deep copy to clean the object before sending it to the Homebridge UI
+          const config = JSON.parse(JSON.stringify(newValue))
+          homebridge.updatePluginConfig([config]);
+        }
+      },
+    },
+    methods: {
+      /**
+       * These are methods that can be called from the HTML.
+       * eg. <button @click="methodName"> or <button @click="methodName(someArg)">
+       */
+       addGateway() {
+        // create an empty selected gateway
+        this.selectedGateway = {};
 
-(async () => {
-  try {
-    await showFormPluginConfig()
-  } catch (error) {
-    console.error(error)
-  }
-})()
+        // set the view to edit-gateway
+        this.view = "edit-gateway";
+
+        // start the form
+        const gatewayForm = homebridge.createForm(gatewaySchema, {}, 'OK', 'Cancel');
+
+        gatewayForm.onChange((form) => {
+          // push changes as they happen into the selectedGateway object
+          this.selectedGateway = form;
+        });
+
+        gatewayForm.onSubmit((form) => {
+          // on save, push the new gateway object into the pluginConfig.gateways array
+          this.pluginConfig.gateways.push(form);
+          this.view = "gateways";
+          gatewayForm.end();
+        });
+
+        gatewayForm.onCancel((form) => {
+          this.view = "gateways";
+          gatewayForm.end();
+        });
+      },
+      editGateway(gateway) {
+        this.view = "edit-gateway";
+
+        // create a copy of the current gateway object
+        const source = JSON.parse(JSON.stringify(gateway))
+
+        // set the selectedGateway so we can access it in the template easily
+        this.selectedGateway = source;
+
+        // load the form
+        const gatewayForm = homebridge.createForm(gatewaySchema, source, 'OK', 'Cancel');
+
+        // on changes, update the selectedGateway
+        gatewayForm.onChange((form) => {
+          this.selectedGateway = form;
+        });
+
+        // on save, update the gateway object in the pluginConfig.gateways array
+        gatewayForm.onSubmit((form) => {
+          Object.assign(gateway, form);
+          this.view = "gateways";
+          gatewayForm.end();
+        });
+
+        // on cancel, just go back to the gateways view, not updating the pluginConfig.gateways array with any changes
+        gatewayForm.onCancel((form) => {
+          this.view = "gateways";
+          gatewayForm.end();
+        });
+      },
+      deleteGateway(index) {
+        // on delete, just remove it from the gateways array
+        this.pluginConfig.gateways.splice(index, 1);
+      },
+      connect() {
+        console.log('connect clicked for ', this.selectedGateway);
+      },
+      getApiKey() {
+        console.log('get api key clicked for ', this.selectedGateway);
+      }
+
+    }
+  });
+
+  /**
+   * Watch for the ready event, then start the vue app
+   */
+  homebridge.addEventListener('ready', async () => {
+    console.log('ready')
+    myApp.mount('#app')
+  });
 </script>
