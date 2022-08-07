@@ -81,7 +81,4 @@ Allow ample time after exposing or removing accessories for HomeKit to sync the 
 ### Command-Line Utility
 Homebridge deCONZ includes the `deconz` command-line utility, to discover,
 monitor, and interact with a deCONZ gateway.
-For more details, issue:
-```
-deconz --help
-```
+See the [`deconz` Tutorial](https://github.com/ebaauw/homebridge-deconz/wiki/%60deconz%60-Tutorial) in the Wiki for more info.
