@@ -711,12 +711,15 @@ class Main extends homebridgeLib.CommandLineTool {
       .on('changed', (rtype, rid, body) => {
         let resource = '/' + rtype + '/' + rid
         if (Object.keys(body).length === 1) {
-          if (body.state != null) {
-            resource += '/state'
-            body = body.state
+          if (body.capabilities != null) {
+            resource += '/capabilities'
+            body = body.capabilities
           } else if (body.config != null) {
             resource += '/config'
             body = body.config
+          } else if (body.state != null) {
+            resource += '/state'
+            body = body.state
           }
         }
         this.log('%s: %s', resource, this.jsonFormatter.stringify(body))
