@@ -21,7 +21,7 @@
   },
   "engines": {
     "deCONZ": "2.19.1",
-    "homebridge": "^1.5.1",
+    "homebridge": "^1.6.0",
     "node": "^18.12.1"
   },
   "dependencies": {
