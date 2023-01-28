@@ -16,7 +16,7 @@
 </span>
 
 ## Homebridge plugin for deCONZ
-Copyright © 2022 Erik Baauw. All rights reserved.
+Copyright© 2022-2023 Erik Baauw. All rights reserved.
 
 ### Work in Progress
 See [Future Development of Homebridge Hue](https://github.com/ebaauw/homebridge-hue/issues/1070) for positioning Homebridge deCONZ versus Homebridge Hue.
