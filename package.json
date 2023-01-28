@@ -17,7 +17,8 @@
   ],
   "main": "index.js",
   "bin": {
-    "deconz": "cli/deconz.js"
+    "deconz": "cli/deconz.js",
+    "ui": "cli/ui.sh"
   },
   "engines": {
     "deCONZ": "2.19.3",
