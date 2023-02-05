@@ -9,11 +9,13 @@
 
 const fs = require('fs')
 const Deconz = require('../lib/Deconz')
-const homebridgeLib = require('homebridge-lib')
+const {
+  CommandLineParser, CommandLineTool, JsonFormatter, OptionParser
+} = require('homebridge-lib')
 const packageJson = require('../package.json')
 
-const { b, u } = homebridgeLib.CommandLineTool
-const { UsageError } = homebridgeLib.CommandLineParser
+const { b, u } = CommandLineTool
+const { UsageError } = CommandLineParser
 
 const usage = {
   deconz: `${b('deconz')} [${b('-hVDp')}] [${b('-H')} ${u('hostname')}[${b(':')}${u('port')}]] [${b('-K')} ${u('api key')}] [${b('-t')} ${u('timeout')}] ${u('command')} [${u('argument')} ...]`,
@@ -351,7 +353,7 @@ Parameters:
   Print full API output.`
 }
 
-class Main extends homebridgeLib.CommandLineTool {
+class Main extends CommandLineTool {
   constructor () {
     super({ mode: 'command', debug: false })
     this.usage = usage.deconz
@@ -378,7 +380,7 @@ class Main extends homebridgeLib.CommandLineTool {
   }
 
   writeGateways () {
-    const jsonFormatter = new homebridgeLib.JsonFormatter(
+    const jsonFormatter = new JsonFormatter(
       { noWhiteSpace: true, sortKeys: true }
     )
     const text = jsonFormatter.stringify(this.gateways)
@@ -386,7 +388,7 @@ class Main extends homebridgeLib.CommandLineTool {
   }
 
   parseArguments () {
-    const parser = new homebridgeLib.CommandLineParser(packageJson)
+    const parser = new CommandLineParser(packageJson)
     const clargs = {
       options: {
         host: process.env.DECONZ_HOST || 'localhost',
@@ -397,11 +399,11 @@ class Main extends homebridgeLib.CommandLineTool {
       .help('h', 'help', help.deconz)
       .version('V', 'version')
       .option('H', 'host', (value) => {
-        homebridgeLib.OptionParser.toHost('host', value, false, true)
+        OptionParser.toHost('host', value, false, true)
         clargs.options.host = value
       })
       .option('K', 'apiKey', (value) => {
-        clargs.options.apiKey = homebridgeLib.OptionParser.toString(
+        clargs.options.apiKey = OptionParser.toString(
           'apiKey', value, true, true
         )
       })
@@ -416,7 +418,7 @@ class Main extends homebridgeLib.CommandLineTool {
         }
       })
       .option('t', 'timeout', (value) => {
-        clargs.options.timeout = homebridgeLib.OptionParser.toInt(
+        clargs.options.timeout = OptionParser.toInt(
           'timeout', value, 1, 60, true
         )
       })
@@ -586,7 +588,7 @@ class Main extends homebridgeLib.CommandLineTool {
   // ===== GET =================================================================
 
   async get (...args) {
-    const parser = new homebridgeLib.CommandLineParser(packageJson)
+    const parser = new CommandLineParser(packageJson)
     const clargs = {
       options: {}
     }
@@ -609,10 +611,10 @@ class Main extends homebridgeLib.CommandLineTool {
         }
         clargs.resource = list.length === 0
           ? '/'
-          : homebridgeLib.OptionParser.toPath('resource', list[0])
+          : OptionParser.toPath('resource', list[0])
       })
       .parse(...args)
-    const jsonFormatter = new homebridgeLib.JsonFormatter(clargs.options)
+    const jsonFormatter = new JsonFormatter(clargs.options)
     const response = await this.client.get(clargs.resource)
     this.print(jsonFormatter.stringify(response))
   }
@@ -620,7 +622,7 @@ class Main extends homebridgeLib.CommandLineTool {
   // ===== PUT, POST, DELETE ===================================================
 
   async resourceCommand (command, ...args) {
-    const parser = new homebridgeLib.CommandLineParser(packageJson)
+    const parser = new CommandLineParser(packageJson)
     const clargs = {
       options: {}
     }
@@ -628,7 +630,7 @@ class Main extends homebridgeLib.CommandLineTool {
       .help('h', 'help', help[command])
       .flag('v', 'verbose', () => { clargs.options.verbose = true })
       .parameter('resource', (resource) => {
-        clargs.resource = homebridgeLib.OptionParser.toPath('resource', resource)
+        clargs.resource = OptionParser.toPath('resource', resource)
         if (clargs.resource === '/') {
           // deCONZ will crash otherwise, see deconz-rest-plugin#2520.
           throw new UsageError(`/: invalid resource for ${command}`)
@@ -648,7 +650,7 @@ class Main extends homebridgeLib.CommandLineTool {
       })
       .parse(...args)
     const response = await this.client[command](clargs.resource, clargs.body)
-    const jsonFormatter = new homebridgeLib.JsonFormatter()
+    const jsonFormatter = new JsonFormatter()
     if (clargs.options.verbose || response.success == null) {
       this.print(jsonFormatter.stringify(response.body))
       return
@@ -688,7 +690,7 @@ class Main extends homebridgeLib.CommandLineTool {
   }
 
   async eventlog (...args) {
-    const parser = new homebridgeLib.CommandLineParser(packageJson)
+    const parser = new CommandLineParser(packageJson)
     let mode = 'daemon'
     const options = {}
     parser
@@ -697,7 +699,7 @@ class Main extends homebridgeLib.CommandLineTool {
       .flag('r', 'raw', () => { options.raw = true })
       .flag('s', 'service', () => { mode = 'service' })
       .parse(...args)
-    this.jsonFormatter = new homebridgeLib.JsonFormatter(
+    this.jsonFormatter = new JsonFormatter(
       mode === 'service' ? { noWhiteSpace: true } : {}
     )
     const { websocketport } = await this.client.get('/config')
@@ -741,7 +743,7 @@ class Main extends homebridgeLib.CommandLineTool {
   // ===========================================================================
 
   async simpleCommand (command, ...args) {
-    const parser = new homebridgeLib.CommandLineParser(packageJson)
+    const parser = new CommandLineParser(packageJson)
     const clargs = {
       options: {}
     }
@@ -750,7 +752,7 @@ class Main extends homebridgeLib.CommandLineTool {
       .flag('v', 'verbose', () => { clargs.options.verbose = true })
       .parse(...args)
     const response = await this.client[command]()
-    const jsonFormatter = new homebridgeLib.JsonFormatter()
+    const jsonFormatter = new JsonFormatter()
     for (const error of response.errors) {
       this.warn('api error %d: %s', error.type, error.description)
     }
@@ -770,45 +772,45 @@ class Main extends homebridgeLib.CommandLineTool {
   }
 
   async discover (...args) {
-    const parser = new homebridgeLib.CommandLineParser(packageJson)
+    const parser = new CommandLineParser(packageJson)
     let stealth = false
     parser
       .help('h', 'help', help.discover)
       .flag('S', 'stealth', () => { stealth = true })
       .parse(...args)
-    const jsonFormatter = new homebridgeLib.JsonFormatter({ sortKeys: true })
+    const jsonFormatter = new JsonFormatter({ sortKeys: true })
     const bridges = await this.deconzDiscovery.discover(stealth)
     this.print(jsonFormatter.stringify(bridges))
   }
 
   async config (...args) {
-    const parser = new homebridgeLib.CommandLineParser(packageJson)
+    const parser = new CommandLineParser(packageJson)
     const options = {}
     parser
       .help('h', 'help', help.config)
       .flag('s', 'sortKeys', () => { options.sortKeys = true })
       .parse(...args)
-    const jsonFormatter = new homebridgeLib.JsonFormatter(options)
+    const jsonFormatter = new JsonFormatter(options)
     const json = jsonFormatter.stringify(this.gatewayConfig)
     this.print(json)
   }
 
   async description (...args) {
-    const parser = new homebridgeLib.CommandLineParser(packageJson)
+    const parser = new CommandLineParser(packageJson)
     const options = {}
     parser
       .help('h', 'help', help.description)
       .flag('s', 'sortKeys', () => { options.sortKeys = true })
       .parse(...args)
     const response = await this.deconzDiscovery.description(this.clargs.options.host)
-    const jsonFormatter = new homebridgeLib.JsonFormatter(options)
+    const jsonFormatter = new JsonFormatter(options)
     const json = jsonFormatter.stringify(response)
     this.print(json)
   }
 
   async getApiKey (...args) {
-    const parser = new homebridgeLib.CommandLineParser(packageJson)
-    const jsonFormatter = new homebridgeLib.JsonFormatter(
+    const parser = new CommandLineParser(packageJson)
+    const jsonFormatter = new JsonFormatter(
       { noWhiteSpace: true, sortKeys: true }
     )
     parser
@@ -834,17 +836,15 @@ class Main extends homebridgeLib.CommandLineTool {
   // ===== LIGHTVALUES =========================================================
 
   async probe (...args) {
-    const parser = new homebridgeLib.CommandLineParser(packageJson)
+    const parser = new CommandLineParser(packageJson)
     const clargs = {
       maxCount: 60
     }
     parser
       .help('h', 'help', help.probe)
       .flag('v', 'verbose', () => { clargs.verbose = true })
-      .option('t', 'timeout', (value, key) => {
-        homebridgeLib.OptionParser.toInt(
-          'timeout', value, 1, 10, true
-        )
+      .option('t', 'timeout', (value) => {
+        OptionParser.toInt('timeout', value, 1, 10, true)
         clargs.maxCount = value * 12
       })
       .parameter('light', (value) => {
@@ -929,7 +929,7 @@ class Main extends homebridgeLib.CommandLineTool {
       response.xy.b = await probeXy.call(this, 'blue', [zero, zero])
     }
     await this.client.put(clargs.light + '/state', { on: light.state.on })
-    this.jsonFormatter = new homebridgeLib.JsonFormatter()
+    this.jsonFormatter = new JsonFormatter()
     const json = this.jsonFormatter.stringify(response)
     this.print(json)
   }
@@ -937,7 +937,7 @@ class Main extends homebridgeLib.CommandLineTool {
   // ===== BRIDGE/GATEWAY DISCOVERY ==============================================
 
   async restart (...args) {
-    const parser = new homebridgeLib.CommandLineParser(packageJson)
+    const parser = new CommandLineParser(packageJson)
     const clargs = {}
     parser
       .help('h', 'help', help.restart)
