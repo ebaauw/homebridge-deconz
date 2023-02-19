@@ -11,7 +11,7 @@ const fs = require('fs')
 const Deconz = require('../lib/Deconz')
 const {
   CommandLineParser, CommandLineTool, JsonFormatter, OptionParser
-} = require('homebridge-lib')
+} = require('hb-lib-tools')
 const packageJson = require('../package.json')
 
 const { b, u } = CommandLineTool
@@ -451,13 +451,17 @@ class Main extends CommandLineTool {
     })
     this.deconzDiscovery
       .on('error', (error) => {
-        this.log(
-          '%s: request %d: %s %s', error.request.name,
-          error.request.id, error.request.method, error.request.resource
-        )
-        this.warn(
-          '%s: request %d: %s', error.request.name, error.request.id, error
-        )
+        if (error.request != null) {
+          this.log(
+            '%s: request %d: %s %s', error.request.name,
+            error.request.id, error.request.method, error.request.resource
+          )
+          this.warn(
+            '%s: request %d: %s', error.request.name, error.request.id, error
+          )
+          return
+        }
+        this.warn(error)
       })
       .on('request', (request) => {
         this.debug(
@@ -607,7 +611,7 @@ class Main extends CommandLineTool {
       .flag('v', 'valuesOnly', () => { clargs.options.valuesOnly = true })
       .remaining((list) => {
         if (list.length > 1) {
-          throw new UsageError('too many paramters')
+          throw new UsageError('too many parameters')
         }
         clargs.resource = list.length === 0
           ? '/'
@@ -638,7 +642,7 @@ class Main extends CommandLineTool {
       })
       .remaining((list) => {
         if (list.length > 1) {
-          throw new Error('too many paramters')
+          throw new Error('too many parameters')
         }
         if (list.length === 1) {
           try {
