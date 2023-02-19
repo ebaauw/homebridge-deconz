@@ -8,6 +8,7 @@
       "README.md",
       "index.js",
       "lib",
+      "cli",
       "node_modules/hb-lib-tools/lib/HttpClient.js"
     ]
   },
