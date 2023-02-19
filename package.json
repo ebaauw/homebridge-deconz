@@ -26,7 +26,7 @@
     "node": "^18.14.1"
   },
   "dependencies": {
-    "homebridge-lib": "~6.3.9",
+    "homebridge-lib": "~6.3.10",
     "ws": "^8.12.1",
     "xml2js": "~0.4.23"
   },
