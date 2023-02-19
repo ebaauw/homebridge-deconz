@@ -23,11 +23,11 @@
   "engines": {
     "deCONZ": "2.19.3",
     "homebridge": "^1.6.0",
-    "node": "^18.14.0"
+    "node": "^18.14.1"
   },
   "dependencies": {
-    "homebridge-lib": "~6.3.9-0",
-    "ws": "^8.12.0",
+    "homebridge-lib": "~6.3.9",
+    "ws": "^8.12.1",
     "xml2js": "~0.4.23"
   },
   "scripts": {
