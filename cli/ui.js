@@ -19,8 +19,8 @@ const { UsageError } = CommandLineParser
 
 const usage = {
   ui: `${b('ui')} [${b('-hVD')}] [${b('-U')} ${u('username')}] [${b('-G')} ${u('gateway')}] [${b('-t')} ${u('timeout')}] ${u('command')} [${u('argument')} ...]`,
-  get: `${b('get')} [${b('-hsnjuatlkv')}] [${b('/devices')}[${b('/')}${u('id')}] | ${b('/accessories')}[${b('/')}${u('id')}]]`,
-  put: `${b('put')} [${b('-hsnjuatlkv')}] [${b('/devices/')}${u('id')}] | ${b('/accessories/')}${u('id')}]] ${u('body')}`
+  get: `${b('get')} [${b('-hsnjuatlkv')}] ${u('resource')}`,
+  put: `${b('put')} ${u('resource')} ${u('body')}`
 }
 
 const description = {
@@ -98,13 +98,28 @@ Parameters:
   Limit output to keys. With ${b('-u')}, output a JSON array of paths.
 
   ${b('-v')}, ${b('--valuesOnly')}
-  Limit output to values. With ${b('-u')}, output a JSON array of values.`,
+  Limit output to values. With ${b('-u')}, output a JSON array of values.
+  
+  ${u('resource')}
+  The resource to get:
+    ${b('/')}                Get gateway.
+    ${b('/devices')}         List devices.
+    ${b('/devices/')}${u('id')}      Get device.
+    ${b('/accessories')}     List accessories.
+    ${b('/accessories/')}${u('id')}  Get accessory.`,
   put: `${description.put}
 
 Usage: ${b('ui')} ${usage.put}
   
 Parameters:
-  xxx`
+  ${u('resource')}
+  The resource to update:
+    ${b('/')}                Update gateway settings.
+    ${b('/devices/')}${u('id')}      Update device settings.
+    ${b('/accessories/')}${u('id')}  Update accessory settings.
+
+  ${u('body')}
+  The new settings as JSON string.`
 }
 
 class Main extends CommandLineTool {
@@ -392,7 +407,7 @@ class Main extends CommandLineTool {
       options: {}
     }
     parser
-      .help('h', 'help', help.get)
+      .help('h', 'help', help.put)
       .parameter('resource', (value) => {
         clargs.resource = OptionParser.toPath('resource', value)
       })
