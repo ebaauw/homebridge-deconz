@@ -19,12 +19,14 @@ const { UsageError } = CommandLineParser
 
 const usage = {
   ui: `${b('ui')} [${b('-hVD')}] [${b('-U')} ${u('username')}] [${b('-G')} ${u('gateway')}] [${b('-t')} ${u('timeout')}] ${u('command')} [${u('argument')} ...]`,
+  discover: `${b('discover')} [${b('-hsnjuatlkv')}]`,
   get: `${b('get')} [${b('-hsnjuatlkv')}] ${u('resource')}`,
-  put: `${b('put')} ${u('resource')} ${u('body')}`
+  put: `${b('put')} [${b('-h')}] ${u('resource')} ${u('body')}`
 }
 
 const description = {
   ui: 'Command line interface to Homebridge deCONZ UI Server for dynamic settings.',
+  discover: 'Discover UI servers and gateways.',
   get: 'Get dynamic settings.',
   put: 'Update dynamic settings.'
 }
@@ -54,6 +56,9 @@ Parameters:
   Set timeout to ${u('timeout')} seconds instead of default ${b(5)}.
 
 Commands:
+  ${usage.discover}
+  ${description.discover}
+
   ${usage.get}
   ${description.get}
 
@@ -61,6 +66,44 @@ Commands:
   ${description.put}
 
 For more help, issue: ${b('ui')} ${u('command')} ${b('-h')}`,
+  discover: `${description.discover}
+
+Usage: ${b('ui')} ${usage.discover}
+
+Parameters:
+  ${b('-h')}, ${b('--help')}
+  Print this help and exit.
+  
+  ${b('-s')}, ${b('--sortKeys')}
+  Sort object key/value pairs alphabetically on key.
+
+  ${b('-n')}, ${b('-noWhiteSpace')}
+  Do not include spaces nor newlines in the output.
+
+  ${b('-j')}, ${b('--jsonArray')}
+  Output a JSON array of objects for each key/value pair.
+  Each object contains two key/value pairs: key "keys" with an array
+  of keys as value and key "value" with the value as value.
+
+  ${b('-u')}, ${b('--joinKeys')}
+  Output JSON array of objects for each key/value pair.
+  Each object contains one key/value pair: the path (concatenated
+  keys separated by '/') as key and the value as value.
+
+  ${b('-a')}, ${b('--ascii')}
+  Output path:value in plain text instead of JSON.
+
+  ${b('-t')}, ${b('--topOnly')}
+  Limit output to top-level key/values.
+
+  ${b('-l')}, ${b('--leavesOnly')}
+  Limit output to leaf (non-array, non-object) key/values.
+
+  ${b('-k')}, ${b('--keysOnly')}
+  Limit output to keys. With ${b('-u')}, output a JSON array of paths.
+
+  ${b('-v')}, ${b('--valuesOnly')}
+  Limit output to values. With ${b('-u')}, output a JSON array of values.`,
   get: `${description.get}
 
 Usage: ${b('ui')} ${usage.get}
@@ -102,21 +145,33 @@ Parameters:
   
   ${u('resource')}
   The resource to get:
-    ${b('/')}                Get gateway.
-    ${b('/devices')}         List devices.
-    ${b('/devices/')}${u('id')}      Get device.
-    ${b('/accessories')}     List accessories.
-    ${b('/accessories/')}${u('id')}  Get accessory.`,
+    ${b('/')}                             Get gateway.
+    ${b('/accessories')}                  List accessories.
+    ${b('/accessories/')}${u('id')}               Get accessory.
+    ${b('/devices')}                      List devices.
+    ${b('/devices/')}${u('id')}                   Get device.
+    ${b('/gateways')}                     List gateways.
+    ${b('/gateways/')}${u('gid')}                 Get gateway.
+    ${b('/gateways/')}${u('gid')}${b('/accessories')}     List accessories.
+    ${b('/gateways/')}${u('gid')}${b('/accessories/')}${u('id')}  Get accessory.
+    ${b('/gateways/')}${u('gid')}${b('/devices')}         List devices.
+    ${b('/gateways/')}${u('gid')}${b('/devices/')}${u('id')}      Get device.`,
   put: `${description.put}
 
 Usage: ${b('ui')} ${usage.put}
   
 Parameters:
+  ${b('-h')}, ${b('--help')}
+  Print this help and exit.
+
   ${u('resource')}
   The resource to update:
-    ${b('/')}                Update gateway settings.
-    ${b('/devices/')}${u('id')}      Update device settings.
-    ${b('/accessories/')}${u('id')}  Update accessory settings.
+    ${b('/')}                             Update gateway settings.
+    ${b('/accessories/')}${u('id')}               Update accessory settings.
+    ${b('/devices/')}${u('id')}                   Update device settings.
+    ${b('/gateways/')}${u('gid')}                 Update gateway settings.
+    ${b('/gateways/')}${u('gid')}${b('/accessories/')}${u('id')}  Update accessory settings.
+    ${b('/gateways/')}${u('gid')}${b('/devices/')}${u('id')}      Update device settings.
 
   ${u('body')}
   The new settings as JSON string.`
@@ -232,8 +287,11 @@ class Main extends CommandLineTool {
         continue
       }
       try {
-        const username = platform._bridge == null ? null : platform._bridge.username
-        const cachedAccessories = await this.readCachedAccessories(dir, username, platformName)
+        const childBridge = platform._bridge != null
+        const username = childBridge ? platform._bridge.username : config.bridge.username
+        const cachedAccessories = await this.readCachedAccessories(
+          dir, childBridge ? username : null, platformName
+        )
         const cachedGateways = cachedAccessories.filter((accessory) => {
           return accessory.context.className === 'Gateway'
         })
@@ -241,6 +299,7 @@ class Main extends CommandLineTool {
           gateways.push({
             platformName: platform.name == null ? platform.platform : platform.name,
             username,
+            childBridge,
             uiPort: gateway.context.uiPort,
             gid: gateway.context.id,
             name: gateway.context.name
@@ -365,10 +424,36 @@ class Main extends CommandLineTool {
         throw new Error(`no UI server found for gateway ${this.clargs.gateway}`)
       }
     }
+    if (this.clargs.command === 'discover') {
+      return this.discover(platforms, this.clargs.args)
+    }
     const { gid, uiPort } = platforms[0]
     this.client = await this.createUiClient(uiPort)
     this.gid = gid
     return this[this.clargs.command](this.clargs.args)
+  }
+
+  async discover (platforms, ...args) {
+    const parser = new CommandLineParser(packageJson)
+    const clargs = {
+      options: {}
+    }
+    parser
+      .help('h', 'help', help.get)
+      .flag('s', 'sortKeys', () => { clargs.options.sortKeys = true })
+      .flag('n', 'noWhiteSpace', () => {
+        clargs.options.noWhiteSpace = true
+      })
+      .flag('j', 'jsonArray', () => { clargs.options.noWhiteSpace = true })
+      .flag('u', 'joinKeys', () => { clargs.options.joinKeys = true })
+      .flag('a', 'ascii', () => { clargs.options.ascii = true })
+      .flag('t', 'topOnly', () => { clargs.options.topOnly = true })
+      .flag('l', 'leavesOnly', () => { clargs.options.leavesOnly = true })
+      .flag('k', 'keysOnly', () => { clargs.options.keysOnly = true })
+      .flag('v', 'valuesOnly', () => { clargs.options.valuesOnly = true })
+      .parse(...args)
+    const jsonFormatter = new JsonFormatter(clargs.options)
+    this.print(jsonFormatter.stringify(platforms))
   }
 
   async get (...args) {
@@ -394,10 +479,15 @@ class Main extends CommandLineTool {
       })
       .parse(...args)
     if (clargs.resource === '/') {
-      clargs.resource = ''
+      clargs.resource = '/gateways/' + this.gid
+    } else if (
+      clargs.resource.startsWith('/devices') ||
+      clargs.resource.startsWith('/accessories')
+    ) {
+      clargs.resource = '/gateways/' + this.gid + clargs.resource
     }
+    const { body } = await this.client.get(clargs.resource)
     const jsonFormatter = new JsonFormatter(clargs.options)
-    const { body } = await this.client.get('/gateways/' + this.gid + clargs.resource)
     this.print(jsonFormatter.stringify(body))
   }
 
@@ -421,12 +511,16 @@ class Main extends CommandLineTool {
       })
       .parse(...args)
     if (clargs.resource === '/') {
-      clargs.resource = ''
+      clargs.resource = '/gateways/' + this.gid
+    } else if (
+      clargs.resource.startsWith('/devices') ||
+      clargs.resource.startsWith('/accessories')
+    ) {
+      clargs.resource = '/gateways/' + this.gid + clargs.resource
     }
+    clargs.resource += '/settings'
     const jsonFormatter = new JsonFormatter(clargs.options)
-    const { body } = await this.client.put(
-      '/gateways/' + this.gid + clargs.resource + '/settings', clargs.body
-    )
+    const { body } = await this.client.put(clargs.resource, clargs.body)
     this.print(jsonFormatter.stringify(body))
   }
 }
