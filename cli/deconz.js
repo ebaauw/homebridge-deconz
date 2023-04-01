@@ -514,10 +514,7 @@ class Main extends CommandLineTool {
 
     this.bridgeid = this.gatewayConfig.bridgeid
     if (this.clargs.options.apiKey == null) {
-      if (
-        this.gateways[this.bridgeid] != null &&
-        this.gateways[this.bridgeid].apiKey != null
-      ) {
+      if (this.gateways[this.bridgeid]?.apiKey != null) {
         this.clargs.options.apiKey = this.gateways[this.bridgeid].apiKey
       } else if (process.env.DECONZ_API_KEY != null) {
         this.clargs.options.apiKey = process.env.DECONZ_API_KEY
