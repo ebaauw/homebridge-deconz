@@ -21,7 +21,7 @@
     "ui": "cli/ui.js"
   },
   "engines": {
-    "deCONZ": "2.20.1",
+    "deCONZ": "2.21.2",
     "homebridge": "^1.6.0",
     "node": "^18.15.0"
   },
