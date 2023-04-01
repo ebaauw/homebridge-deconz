@@ -32,8 +32,7 @@ async function showFormPluginConfig () {
       console.log('%s: cachedAccessories: %o', config.name, cachedAccessories)
       const cachedGateways = cachedAccessories.filter((accessory) => {
         return accessory.plugin === 'homebridge-deconz' &&
-          accessory.context != null &&
-          accessory.context.className === 'Gateway'
+          accessory.context?.className === 'Gateway'
       })
       const result = {}
       for (const gateway of cachedGateways) {
@@ -207,8 +206,7 @@ async function showFormGateways (gateway) {
   const cachedAccessories = await homebridge.getCachedAccessories()
   const cachedGateways = cachedAccessories.filter((accessory) => {
     return accessory.plugin === 'homebridge-deconz' &&
-      accessory.context != null &&
-      accessory.context.className === 'Gateway'
+      accessory.context?.className === 'Gateway'
   })
   const result = {}
   for (const gateway of cachedGateways) {
@@ -249,7 +247,7 @@ async function showFormGateways (gateway) {
   //   layout: null,
   //   form: null
   // }, {
-  //   gateway: gateway != null ? gateway : gateways[0]
+  //   gateway: gateway ?? gateways[0]
   // }, 'Gateway Settings', 'Homebridge Settings')
   const form = homebridge.createForm({
     footerDisplay: 'For a detailed description, see the [wiki](https://github.com/ebaauw/homebridge-deconz/wiki/Configuration).',
