@@ -6,7 +6,7 @@
 'use strict'
 
 const { UiServer } = require('homebridge-lib')
-const Deconz = require('../lib/Deconz')
+const { Discovery } = require('hb-deconz-tools')
 
 class DeconzUiServer extends UiServer {
   constructor () {
@@ -14,7 +14,7 @@ class DeconzUiServer extends UiServer {
 
     this.onRequest('discover', async (params) => {
       if (this.discovery == null) {
-        this.discovery = new Deconz.Discovery({
+        this.discovery = new Discovery({
           // forceHttp: this.config.forceHttp,
           // timeout: this.config.timeout
         })
