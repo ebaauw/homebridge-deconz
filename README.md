@@ -81,7 +81,7 @@ Allow ample time after exposing or removing accessories for HomeKit to sync the 
 ### Command-Line Utilities
 Homebridge deCONZ includes the following command-line utilities:
 - `deconz`, to discover, monitor, and interact with deCONZ gateways.  
-See the [`deconz` Tutorial](https://github.com/ebaauw/homebridge-deconz/wiki/%60deconz%60-Tutorial) in the Wiki for more info.
+See the [`deconz` Command-Line Utility](https://github.com/ebaauw/homebridge-deconz/wiki/deconz-Command%E2%80%90Line-Utility) in the Wiki for more info.
 - `otau`, to download and analyse over-the-air-update firmware files for Zigbee devices.  
 Issue `otau -h` for more info.
 - `ui` to configure a running image of Homebridge deCONZ.  
