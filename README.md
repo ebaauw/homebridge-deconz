@@ -78,10 +78,14 @@ Setting _Expose Lights_ will include the ZHAConsumption and ZHAPower `/sensors` 
 Note that HomeKit doesn't like configuration changes.
 Allow ample time after exposing or removing accessories for HomeKit to sync the changed configuration to all Apple devices.
 
-### Command-Line Utility
-Homebridge deCONZ includes the `deconz` command-line utility, to discover,
-monitor, and interact with a deCONZ gateway.
+### Command-Line Utilities
+Homebridge deCONZ includes the following command-line utilities:
+- `deconz`, to discover, monitor, and interact with deCONZ gateways.  
 See the [`deconz` Tutorial](https://github.com/ebaauw/homebridge-deconz/wiki/%60deconz%60-Tutorial) in the Wiki for more info.
+- `otau`, to download and analyse over-the-air-update firmware files for Zigbee devices.  
+Issue `otau -h` for more info.
+- `ui` to configure a running image of Homebridge deCONZ.  
+See [`Dynamic Configuration`](https://github.com/ebaauw/homebridge-deconz/wiki/Dynamic-Configuration) in the Wiki for more info.
 
 ### Troubleshooting
 - As mentioned above, Homebridge deCONZ is still under development.  Sometimes, cached accessories from an older version might confuse a newer version, causing all sorts of weird errors.  In this case, best un-expose the offending accessory, wait for HomeKit to remove it, and re-expose the accessory.  Note that this will cause HomeKit to see a new accessory, and lose any associations with HomeKit rooms, groups, scenes, and automations.

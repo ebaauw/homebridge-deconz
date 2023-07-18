@@ -18,6 +18,7 @@
   "main": "index.js",
   "bin": {
     "deconz": "cli/deconz.js",
+    "otau": "cli/otau.js",
     "ui": "cli/ui.js"
   },
   "engines": {
