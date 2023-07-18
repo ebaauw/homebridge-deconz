@@ -82,10 +82,11 @@ Allow ample time after exposing or removing accessories for HomeKit to sync the 
 Homebridge deCONZ includes the following command-line utilities:
 - `deconz`, to discover, monitor, and interact with deCONZ gateways.  
 See the [`deconz` Command-Line Utility](https://github.com/ebaauw/homebridge-deconz/wiki/deconz-Command%E2%80%90Line-Utility) in the Wiki for more info.
-- `otau`, to download and analyse over-the-air-update firmware files for Zigbee devices.  
-Issue `otau -h` for more info.
-- `ui` to configure a running image of Homebridge deCONZ.  
+- `otau`, to download and analyse over-the-air-update firmware files for Zigbee devices.
+- `ui` to configure a running instance of Homebridge deCONZ.  
 See [`Dynamic Configuration`](https://github.com/ebaauw/homebridge-deconz/wiki/Dynamic-Configuration) in the Wiki for more info.
+
+Each command-line tool takes a `-h` or `--help` argument to provide a brief overview of its functionality and command-line arguments.
 
 ### Troubleshooting
 - As mentioned above, Homebridge deCONZ is still under development.  Sometimes, cached accessories from an older version might confuse a newer version, causing all sorts of weird errors.  In this case, best un-expose the offending accessory, wait for HomeKit to remove it, and re-expose the accessory.  Note that this will cause HomeKit to see a new accessory, and lose any associations with HomeKit rooms, groups, scenes, and automations.
