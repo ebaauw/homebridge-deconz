@@ -45,7 +45,7 @@ I strongly recommend to run Homebridge deCONZ in a separate Homebridge installat
 
 To interact with HomeKit, you need an Apple device with Siri or a HomeKit app.  
 Please note that Siri and Apple's [Home](https://support.apple.com/en-us/HT204893) app only provide limited HomeKit support.
-To configure Homebridge deCONZ, and to use its full features, you need another HomeKit app, like [Eve](https://www.evehome.com/en/eve-app) (free) or Matthias Hochgatterer's [Home+](https://hochgatterer.me/home/) (paid).  
+To use the full features of Homebridge deCONZ, you need another HomeKit app, like [Eve](https://www.evehome.com/en/eve-app) (free) or Matthias Hochgatterer's [Home+](https://hochgatterer.me/home/) (paid).  
 As HomeKit uses mDNS (formally known as Bonjour) to discover Homebridge, the server running Homebridge must be on the same subnet as your Apple devices running HomeKit.
 Most cases of _Not Responding_ accessories are due to mDNS issues.  
 For remote access and for HomeKit automations (incl. support for wireless switches), you need to setup an Apple TV (4th generation or later), HomePod, or iPad as [home hub](https://support.apple.com/en-us/HT207057).  
@@ -53,30 +53,30 @@ I recommend to use the latest released version of the Apple device OS: iOS, iPad
 HomeKit doesn't seem to like using different Apple device OS versions.
 
 ### Configuration
-Most settings for Homebridge deCONZ can be changed at run-time from HomeKit, by the owner of the HomeKit home.
-These settings are persisted across Homebridge restarts.
-In config.json, you only need to specify the platform, and maybe the hostname or IP address and port of your deCONZ gateway(s).
-See the [Wiki](https://github.com/ebaauw/homebridge-deconz/wiki/Configuration) for details and examples.
+Most settings for Homebridge deCONZ, can be changed at run-time, including which devices to expose, how to expose these, and the level of logging.
+This keeps `config.json` extremely simple.
+Typically, you only need to specify the hostname and port of the deCONZ gateway(s) in `config.json`.
+See [`Configuration`](https://github.com/ebaauw/homebridge-deconz/wiki/Configuration) in the Wiki for details.
 
-Homebridge deCONZ exposes a [gateway accessory](https://github.com/ebaauw/homebridge-deconz/wiki/Gateway-Accessory) for each deCONZ gateway.
-In Apple's Home app, this accessory looks like a wireless switch; you'll need another HomeKit app to configure the accessory.
+Homebridge deCONZ provides a Configuration API to change the run-time settings.
+These changes take effect immediately, and are persisted across Homebridge restarts.
+See [`Dynamic Configuration`](https://github.com/ebaauw/homebridge-deconz/wiki/Dynamic-Configuration) in the Wiki for details.
+For now, these dynamic settings are managed through the `ui` command-line tool.
+Eventually, Homebridge deCONZ might provide a configuration user interface to the Homebridge UI, using the configuration API.
 
 When it connects to a deCONZ gateway for the first time, Homebridge deCONZ will try to obtain an API key for two minutes, before exposing the gateway accessory.
 Unless Homebridge deCONZ runs on the same server as the deCONZ gateway, you need to unlock the gateway to allow Homebridge deCONZ to obtain an API key.
-After two minutes, Homebridge deCONZ will give up, exposing the gateway accessory anyways, but marking it inactive.
-Set _Expose_ on the _Gateway Settings_ service of the gateway accessory to retry obtaining an API key.
+After two minutes, Homebridge deCONZ will give up.
+You need to set `expose` on the gateway dynamic settings, to retry obtaining an API key.
 Homebridge deCONZ will **not** retry to obtain an API key on Homebridge restart.
 
-After setting _Expose Lights_, _Expose Sensors_, or _Expose Groups_ on the _Gateway Settings_ service, Homebridge deCONZ will expose a [device accessory](https://github.com/ebaauw/homebridge-deconz/wiki/Device-Accessory) for each of the corresponding devices.
-When clearing the characteristic, the corresponding device accessories are removed from HomeKit.  
-Each device accessory has a _Device Settings_ service, to configure the device.
-Clear _Expose_ on that service, to blacklist the device, and remove the associated accessory from HomeKit.  
-The gateway accessory gains an additional _Device Settings_ service for each blacklisted device.
-To re-expose the corresponding accessory, set _Expose_ on that service.  
-Note that, unlike Homebridge Hue, Homebridge deCONZ handles blacklisting per device, instead of per resource.
-Setting _Expose Lights_ will include the ZHAConsumption and ZHAPower `/sensors` resources for smart plugs, and the ZHABattery for window covering devices; setting _Expose Sensors_ will exclude these.  
+Once it has obtained an API key, by default, Homebridge deCONZ will expose all Zigbee devices connected to the gateway, 
+Use the dynamic settings to prevent devices from being exposed, to change how devices are exposed, and to expose virtual devices like groups or CLIP sensors.  
+Homebridge deCONZ exposes a [gateway accessory](https://github.com/ebaauw/homebridge-deconz/wiki/Gateway-Accessory) for each deCONZ gateway.
+In Apple's Home app, this accessory looks like a wireless switch; you'll need another HomeKit app to use the accessory.
+
 Note that HomeKit doesn't like configuration changes.
-Allow ample time after exposing or removing accessories for HomeKit to sync the changed configuration to all Apple devices.
+After adding or removing accessories, allow ample time for HomeKit to sync the changed configuration to all Apple devices.
 
 ### Command-Line Utilities
 Homebridge deCONZ includes the following command-line utilities:
