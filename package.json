@@ -22,13 +22,13 @@
     "ui": "cli/ui.js"
   },
   "engines": {
-    "deCONZ": "2.22.2",
+    "deCONZ": "2.23.1",
     "homebridge": "^1.6.1",
-    "node": "18.17.1||^18||^16"
+    "node": "20.7.0||^20||^18"
   },
   "dependencies": {
-    "hb-deconz-tools": "~1.0.6",
-    "homebridge-lib": "~6.4.2-0"
+    "hb-deconz-tools": "~1.0.7",
+    "homebridge-lib": "~6.5.1"
   },
   "scripts": {
     "prepare": "standard && rm -rf out && jsdoc -c jsdoc.json",
