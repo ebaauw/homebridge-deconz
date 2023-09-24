@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "hb-deconz-tools": "~1.0.7",
-    "homebridge-lib": "~6.5.1"
+    "homebridge-lib": "~6.6.0"
   },
   "scripts": {
     "prepare": "standard && rm -rf out && jsdoc -c jsdoc.json",
