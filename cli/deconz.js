@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // deconz.js
-// Copyright © 2018-2023 Erik Baauw. All rights reserved.
+// Copyright © 2018-2024 Erik Baauw. All rights reserved.
 //
 // Command line interface to deCONZ gateway.
 

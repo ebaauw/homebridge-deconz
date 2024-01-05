@@ -16,7 +16,7 @@
 </span>
 
 ## Homebridge plugin for deCONZ
-Copyright© 2022-2023 Erik Baauw. All rights reserved.
+Copyright © 2022-2024 Erik Baauw. All rights reserved.
 
 ### Introduction
 This [Homebridge](https://github.com/homebridge/homebridge) plugin exposes to Apple's [HomeKit](http://www.apple.com/ios/home/) ZigBee devices (lights, plugs, sensors, switches, ...) and virtual devices on a deCONZ gateway by dresden elektronik.
