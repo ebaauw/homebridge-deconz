@@ -18,6 +18,7 @@
     "dresden-elektronik",
     "dresdenelektronik"
   ],
+  "type": "module",
   "main": "index.js",
   "bin": {
     "deconz": "cli/deconz.js",
@@ -25,13 +26,13 @@
     "ui": "cli/ui.js"
   },
   "engines": {
-    "deCONZ": "2.26.3",
-    "homebridge": "^1.8.3",
+    "deCONZ": "2.27.6",
+    "homebridge": "^1.8.4||^2.0.0-beta",
     "node": "^20||^18"
   },
   "dependencies": {
-    "hb-deconz-tools": "~1.0.15",
-    "homebridge-lib": "~6.7.5"
+    "hb-deconz-tools": "~2.0.3",
+    "homebridge-lib": "~7.0.5"
   },
   "scripts": {
     "prepare": "standard && rm -rf out && jsdoc -c jsdoc.json",
