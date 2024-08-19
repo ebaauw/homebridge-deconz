@@ -5,13 +5,16 @@
 //
 // Command line interface to Homebridge deCONZ UI Server.
 
-'use strict'
+import { readFile } from 'node:fs/promises'
+import { createRequire } from 'node:module'
 
-const fs = require('fs').promises
-// const Deconz = require('../lib/Deconz')
-const {
-  CommandLineParser, CommandLineTool, HttpClient, JsonFormatter, OptionParser
-} = require('hb-lib-tools')
+import { CommandLineParser } from 'hb-lib-tools/CommandLineParser'
+import { CommandLineTool } from 'hb-lib-tools/CommandLineTool'
+import { HttpClient } from 'hb-lib-tools/HttpClient'
+import { JsonFormatter } from 'hb-lib-tools/JsonFormatter'
+import { OptionParser } from 'hb-lib-tools/OptionParser'
+
+const require = createRequire(import.meta.url)
 const packageJson = require('../package.json')
 
 const { b, u } = CommandLineTool
@@ -247,7 +250,7 @@ class Main extends CommandLineTool {
     */
   async readJsonFile (filename) {
     this.vdebug('reading %s', filename)
-    const text = await fs.readFile(filename)
+    const text = await readFile(filename)
     this.debug('%s: %d bytes', filename, text.length)
     const body = JSON.parse(text)
     this.vdebug('%s: %j', filename, body)

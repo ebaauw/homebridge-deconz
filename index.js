@@ -3,11 +3,15 @@
 //
 // Homebridge plugin for deCONZ.
 
-'use strict'
+import { createRequire } from 'node:module'
 
-const DeconzPlatform = require('./lib/DeconzPlatform')
+import { DeconzPlatform } from './lib/DeconzPlatform.js'
+
+const require = createRequire(import.meta.url)
 const packageJson = require('./package.json')
 
-module.exports = function (homebridge) {
+function main (homebridge) {
   DeconzPlatform.loadPlatform(homebridge, packageJson, 'deCONZ', DeconzPlatform)
 }
+
+export { main as default }

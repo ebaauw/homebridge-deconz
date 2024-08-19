@@ -5,9 +5,11 @@
 //
 // Command line interface to deCONZ gateway.
 
-'use strict'
+import { createRequire } from 'node:module'
 
-const { OtauTool } = require('hb-deconz-tools')
-const pkgJson = require('../package.json')
+import { OtauTool } from 'hb-deconz-tools/OtauTool'
 
-new OtauTool(pkgJson).main()
+const require = createRequire(import.meta.url)
+const packageJson = require('../package.json')
+
+new OtauTool(packageJson).main()

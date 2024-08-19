@@ -3,10 +3,8 @@
 // Homebridge plug-in for deCONZ.
 // Copyright © 2022-2024 Erik Baauw. All rights reserved.
 
-'use strict'
-
-const { UiServer } = require('homebridge-lib')
-const { Discovery } = require('hb-deconz-tools')
+import { UiServer } from 'hb-lib-tools/UiServer'
+import { Discovery } from 'hb-deconz-tools/Discovery'
 
 class DeconzUiServer extends UiServer {
   constructor () {

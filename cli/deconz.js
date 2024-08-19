@@ -5,9 +5,11 @@
 //
 // Command line interface to deCONZ gateway.
 
-'use strict'
+import { createRequire } from 'node:module'
 
-const { DeconzTool } = require('hb-deconz-tools')
-const pkgJson = require('../package.json')
+import { DeconzTool } from 'hb-deconz-tools/DeconzTool'
 
-new DeconzTool(pkgJson).main()
+const require = createRequire(import.meta.url)
+const packageJson = require('../package.json')
+
+new DeconzTool(packageJson).main()
