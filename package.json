@@ -28,11 +28,11 @@
   "engines": {
     "deCONZ": "2.28.1",
     "homebridge": "^1.8.4||^2.0.0-beta",
-    "node": "^20||^18"
+    "node": "^22||^20||^18"
   },
   "dependencies": {
-    "hb-deconz-tools": "~2.0.3",
-    "homebridge-lib": "~7.0.8"
+    "hb-deconz-tools": "~2.0.4",
+    "homebridge-lib": "~7.0.9"
   },
   "scripts": {
     "prepare": "standard && rm -rf out && jsdoc -c jsdoc.json",
