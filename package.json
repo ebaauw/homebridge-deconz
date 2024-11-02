@@ -27,12 +27,12 @@
   },
   "engines": {
     "deCONZ": "2.28.1",
-    "homebridge": "^1.8.4||^2.0.0-beta",
+    "homebridge": "^1.8.5||^2.0.0-beta",
     "node": "^22||^20||^18"
   },
   "dependencies": {
-    "hb-deconz-tools": "~2.0.4",
-    "homebridge-lib": "~7.0.9"
+    "hb-deconz-tools": "~2.0.5",
+    "homebridge-lib": "~7.1.0"
   },
   "scripts": {
     "prepare": "standard && rm -rf out && jsdoc -c jsdoc.json",
