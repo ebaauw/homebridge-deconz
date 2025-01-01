@@ -1,7 +1,7 @@
 // homebridge-deconz/homebridge-ui/server.js
 //
 // Homebridge plug-in for deCONZ.
-// Copyright © 2022-2024 Erik Baauw. All rights reserved.
+// Copyright © 2022-2025 Erik Baauw. All rights reserved.
 
 import { UiServer } from 'hb-lib-tools/UiServer'
 import { Discovery } from 'hb-deconz-tools/Discovery'

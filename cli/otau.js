@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // otau.js
-// Copyright © 2023-2024 Erik Baauw. All rights reserved.
+// Copyright © 2023-2025 Erik Baauw. All rights reserved.
 //
 // Command line interface to deCONZ gateway.
 
