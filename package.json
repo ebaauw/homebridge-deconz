@@ -26,12 +26,12 @@
     "ui": "cli/ui.js"
   },
   "engines": {
-    "deCONZ": "2.28.1",
+    "deCONZ": "2.29.5",
     "homebridge": "^1.9.0||^2.0.0-beta",
     "node": "^22||^20||^18"
   },
   "dependencies": {
-    "hb-deconz-tools": "~2.0.8",
+    "hb-deconz-tools": "~2.0.9",
     "homebridge-lib": "~7.1.4"
   },
   "scripts": {
