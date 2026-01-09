@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // homebridge-deconz/cli/deconz.js
-// Copyright © 2018-2025 Erik Baauw. All rights reserved.
+// Copyright © 2018-2026 Erik Baauw. All rights reserved.
 //
 // Command line interface to Homebridge deCONZ UI Server.
 
