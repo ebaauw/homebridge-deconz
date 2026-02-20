@@ -31,7 +31,7 @@
     "node": "^24||^22||^20"
   },
   "dependencies": {
-    "hb-deconz-tools": "~2.0.22",
+    "hb-deconz-tools": "~2.0.23-0",
     "homebridge-lib": "~7.3.1"
   },
   "scripts": {
