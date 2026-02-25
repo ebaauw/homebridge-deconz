@@ -13,7 +13,6 @@ class DeconzUiServer extends UiServer {
     this.onRequest('discover', async (params) => {
       if (this.discovery == null) {
         this.discovery = new Discovery({
-          // forceHttp: this.config.forceHttp,
           // timeout: this.config.timeout
         })
         this.discovery

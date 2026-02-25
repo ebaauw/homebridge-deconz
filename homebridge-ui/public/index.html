@@ -82,10 +82,6 @@ Copyright © 2022-2026 Erik Baauw. All rights reserved.
           default: 'deCONZ',
           type: 'string'
         },
-        forceHttp: {
-          description: "Use plain http instead of https.",
-          type: "boolean"
-        },
         noResponse: {
           description: "Report unreachable lights as <i>No Response</i> in HomeKit.",
           type: "boolean"
@@ -147,7 +143,6 @@ Copyright © 2022-2026 Erik Baauw. All rights reserved.
         title: "Advanced Settings",
         description: "Don't change these, unless you understand what you're doing.",
         items: [
-          "forceHttp",
           "parallelRequests",
           "stealth",
           "timeout",
