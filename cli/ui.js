@@ -344,58 +344,10 @@ class Main extends CommandLineTool {
     const client = new HttpClient({
       host,
       json: true,
+      logger: this,
       name: host,
       timeout: this.clargs.options.timeout
     })
-    client
-      .on('error', (error) => {
-        if (error.request.id !== this.requestId) {
-          if (error.request.body == null) {
-            this.log(
-              '%s: request %d: %s %s', error.request.name, error.request.id,
-              error.request.method, error.request.resource
-            )
-          } else {
-            this.log(
-              '%s: request %d: %s %s %s', error.request.name, error.request.id,
-              error.request.method, error.request.resource, error.request.body
-            )
-          }
-          this.requestId = error.request.id
-        }
-        this.error('%s: request %d: %s', error.request.name, error.request.id, error)
-      })
-      .on('request', (request) => {
-        if (request.body == null) {
-          this.debug(
-            '%s: request %d: %s %s', request.name, request.id,
-            request.method, request.resource
-          )
-          this.vdebug(
-            '%s: request %d: %s %s', request.name, request.id,
-            request.method, request.url
-          )
-        } else {
-          this.debug(
-            '%s: request %d: %s %s %s', request.name, request.id,
-            request.method, request.resource, request.body
-          )
-          this.vdebug(
-            '%s: request %d: %s %s %s', request.name, request.id,
-            request.method, request.url, request.body
-          )
-        }
-      })
-      .on('response', (response) => {
-        this.vdebug(
-          '%s: request %d: response: %j', response.request.name, response.request.id,
-          response.body
-        )
-        this.debug(
-          '%s: request %d: %d %s', response.request.name, response.request.id,
-          response.statusCode, response.statusMessage
-        )
-      })
     const response = await client.get('/ping')
     if (response.body !== 'pong') {
       throw new Error(`${host}: cannot ping`)
