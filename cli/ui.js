@@ -196,13 +196,7 @@ class Main extends CommandLineTool {
     parser
       .help('h', 'help', help.ui)
       .version('V', 'version')
-      .flag('D', 'debug', () => {
-        if (this.debugEnabled) {
-          this.setOptions({ vdebug: true })
-        } else {
-          this.setOptions({ debug: true, chalk: true })
-        }
-      })
+      .debug('D', 'debug', this
       .option('U', 'username', (value) => {
         clargs.username = OptionParser.toString(
           'username', value, true, true
