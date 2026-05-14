@@ -196,7 +196,7 @@ class Main extends CommandLineTool {
     parser
       .help('h', 'help', help.ui)
       .version('V', 'version')
-      .debug('D', 'debug', this
+      .debug('D', 'debug', this)
       .option('U', 'username', (value) => {
         clargs.username = OptionParser.toString(
           'username', value, true, true
@@ -222,7 +222,6 @@ class Main extends CommandLineTool {
         clargs.command = value
       })
       .remaining((list) => { clargs.args = list })
-    parser
       .parse()
     return clargs
   }
