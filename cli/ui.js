@@ -10,9 +10,12 @@ import { readFile } from 'node:fs/promises'
 import { CommandLineTool, CommandLineParser, UsageError, b, u } from 'hb-lib-tools/CommandLineTool'
 import { HttpClient } from 'hb-lib-tools/HttpClient'
 import { JsonFormatter } from 'hb-lib-tools/JsonFormatter'
-import { OptionParser, patterns, toInt, toPath, toString } from 'hb-lib-tools/OptionParser'
+import { patterns, toInt, toPath, toString } from 'hb-lib-tools/OptionParser'
 
-import defaultPackageJson from '../package.json' with { type: 'json' }
+import { createRequire } from 'node:module'
+const require = createRequire(import.meta.url)
+const defaultPackageJson = require('../package.json')
+// import defaultPackageJson from '../package.json' with { type: 'json' }
 
 const usage = {
   ui: `${b('ui')} [${b('-hVD')}] [${b('-U')} ${u('username')}] [${b('-G')} ${u('gateway')}] [${b('-t')} ${u('timeout')}] ${u('command')} [${u('argument')} ...]`,
