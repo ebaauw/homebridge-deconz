@@ -11,7 +11,7 @@
       "cli",
       "node_modules/hb-deconz-tools/index.js",
       "node_modules/hb-deconz-tools/lib",
-      "node_modules/hb-lib-tools/lib/HttpClient.js"
+      "node_modules/hb-lib-tools/dist/HttpClient.js"
     ]
   },
   "opts": {
