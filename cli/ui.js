@@ -1,24 +1,18 @@
 #!/usr/bin/env node
 
-// homebridge-deconz/cli/deconz.js
+// homebridge-deconz/cli/ui.js
 // Copyright © 2018-2026 Erik Baauw. All rights reserved.
 //
 // Command line interface to Homebridge deCONZ UI Server.
 
 import { readFile } from 'node:fs/promises'
-import { createRequire } from 'node:module'
 
-import { CommandLineParser } from 'hb-lib-tools/CommandLineParser'
-import { CommandLineTool } from 'hb-lib-tools/CommandLineTool'
+import { CommandLineTool, CommandLineParser, UsageError, b, u } from 'hb-lib-tools/CommandLineTool'
 import { HttpClient } from 'hb-lib-tools/HttpClient'
 import { JsonFormatter } from 'hb-lib-tools/JsonFormatter'
-import { OptionParser } from 'hb-lib-tools/OptionParser'
+import { OptionParser, patterns, toInt, toPath, toString } from 'hb-lib-tools/OptionParser'
 
-const require = createRequire(import.meta.url)
-const packageJson = require('../package.json')
-
-const { b, u } = CommandLineTool
-const { UsageError } = CommandLineParser
+import defaultPackageJson from '../package.json' with { type: 'json' }
 
 const usage = {
   ui: `${b('ui')} [${b('-hVD')}] [${b('-U')} ${u('username')}] [${b('-G')} ${u('gateway')}] [${b('-t')} ${u('timeout')}] ${u('command')} [${u('argument')} ...]`,
@@ -181,38 +175,38 @@ Parameters:
 }
 
 class Main extends CommandLineTool {
-  constructor () {
-    super({ mode: 'command', debug: false })
+  constructor (packageJson) {
+    super(packageJson ?? defaultPackageJson, { mode: 'command', debug: false })
     this.usage = usage.deconz
   }
 
   parseArguments () {
-    const parser = new CommandLineParser(packageJson)
+    const parser = new CommandLineParser(this)
     const clargs = {
       options: {
         timeout: 5
       }
     }
     parser
-      .help('h', 'help', help.ui)
-      .version('V', 'version')
-      .debug('D', 'debug', this)
+      .helpFlag('h', 'help', help.ui)
+      .versionFlag('V', 'version')
+      .debugFlag('D', 'debug')
       .option('U', 'username', (value) => {
-        clargs.username = OptionParser.toString(
-          'username', value, true, true
+        clargs.username = toString(
+          value, { key: 'username', nonEmpty: true, userInput: true }
         ).toUpperCase()
-        if (!OptionParser.patterns.mac.test(clargs.username)) {
+        if (!patterns.mac.test(clargs.username)) {
           throw new UsageError(`${clargs.username}: invalid username`)
         }
       })
       .option('G', 'gateway', (value) => {
-        clargs.gateway = OptionParser.toString(
-          'gateway', value, true, true
+        clargs.gateway = toString(
+          value, { key: 'gateway', nonEmpty: true, userInput: true }
         ).toUpperCase()
       })
       .option('t', 'timeout', (value) => {
-        clargs.options.timeout = OptionParser.toInt(
-          'timeout', value, 1, 60, true
+        clargs.options.timeout = toInt(
+          value, { key: 'timeout', min: 1, max: 60, userInput: true }
         )
       })
       .parameter('command', (value) => {
@@ -342,7 +336,7 @@ class Main extends CommandLineTool {
       timeout: this.clargs.options.timeout
     })
     const response = await client.get('/ping')
-    if (response.body !== 'pong') {
+    if (response.jsonBody !== 'pong') {
       throw new Error(`${host}: cannot ping`)
     }
     return client
@@ -382,12 +376,12 @@ class Main extends CommandLineTool {
   }
 
   async discover (platforms, ...args) {
-    const parser = new CommandLineParser(packageJson)
+    const parser = new CommandLineParser(this)
     const clargs = {
       options: {}
     }
     parser
-      .help('h', 'help', help.get)
+      .helpFlag('h', 'help', help.get)
       .flag('s', 'sortKeys', () => { clargs.options.sortKeys = true })
       .flag('n', 'noWhiteSpace', () => {
         clargs.options.noWhiteSpace = true
@@ -405,12 +399,12 @@ class Main extends CommandLineTool {
   }
 
   async get (...args) {
-    const parser = new CommandLineParser(packageJson)
+    const parser = new CommandLineParser(this)
     const clargs = {
       options: {}
     }
     parser
-      .help('h', 'help', help.get)
+      .helpFlag('h', 'help', help.get)
       .flag('s', 'sortKeys', () => { clargs.options.sortKeys = true })
       .flag('n', 'noWhiteSpace', () => {
         clargs.options.noWhiteSpace = true
@@ -423,7 +417,7 @@ class Main extends CommandLineTool {
       .flag('k', 'keysOnly', () => { clargs.options.keysOnly = true })
       .flag('v', 'valuesOnly', () => { clargs.options.valuesOnly = true })
       .parameter('resource', (value) => {
-        clargs.resource = OptionParser.toPath('resource', value)
+        clargs.resource = toPath(value, { key: 'resource', userInput: true })
       })
       .parse(...args)
     if (clargs.resource === '/') {
@@ -434,23 +428,23 @@ class Main extends CommandLineTool {
     ) {
       clargs.resource = '/gateways/' + this.gid + clargs.resource
     }
-    const { body } = await this.client.get(clargs.resource)
+    const { jsonBody } = await this.client.get(clargs.resource)
     const jsonFormatter = new JsonFormatter(clargs.options)
-    this.print(jsonFormatter.stringify(body))
+    this.print(jsonFormatter.stringify(jsonBody))
   }
 
   async put (...args) {
-    const parser = new CommandLineParser(packageJson)
+    const parser = new CommandLineParser(this)
     const clargs = {
       options: {}
     }
     parser
-      .help('h', 'help', help.put)
+      .helpFlag('h', 'help', help.put)
       .parameter('resource', (value) => {
-        clargs.resource = OptionParser.toPath('resource', value)
+        clargs.resource = toPath(value, { key: 'resource', userInput: true })
       })
       .parameter('body', (value) => {
-        value = OptionParser.toString('body', value, true, true)
+        value = toString(value, { key: 'body', nonEmpty: true, userInput: true })
         try {
           clargs.body = JSON.parse(value)
         } catch (error) {
@@ -468,8 +462,11 @@ class Main extends CommandLineTool {
     }
     clargs.resource += '/settings'
     const jsonFormatter = new JsonFormatter(clargs.options)
-    const { body } = await this.client.put(clargs.resource, clargs.body)
-    this.print(jsonFormatter.stringify(body))
+    const { jsonBody } = await this.client.put(clargs.resource, clargs.body)
+    for (const error of jsonBody.errors || []) {
+      this.warn(error) // TODO: include request details.
+    }
+    this.print(jsonFormatter.stringify(jsonBody.success))
   }
 }
 
